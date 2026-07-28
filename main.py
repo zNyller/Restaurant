@@ -3,6 +3,11 @@ from restaurante import Restaurante
 from utils import validar_inteiro
 
 
+""" 
+TO-DO NEXT: CRIAR A CLASSE PEDIDO
+"""
+
+
 def main() -> None:
     cardapio = Cardapio()
     restaurante = Restaurante(cardapio)
