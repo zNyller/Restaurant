@@ -37,11 +37,14 @@ class Restaurante:
 
 
     def anotar_pedido(self, cliente: Cliente) -> None:
-        prato = cliente.fazer_pedido(self.cardapio)
+        pedido = cliente.fazer_pedido(self.cardapio)
         print(f"Anotando o pedido...")
         sleep(1)
-        print(f"O cliente pediu um {prato.nome}, no valor de R$ {prato.preco:.2f}")
+        print(
+            f"O cliente pediu {pedido.prato.nome} e {pedido.bebida.nome}, "
+            f"no valor total de R${pedido.valor:.2f}"
+        )
         print("Enviando o pedido à cozinha...")
         sleep(1)
 
-        self.cozinha.preparar_prato(prato)
+        self.cozinha.preparar_prato(pedido.prato)

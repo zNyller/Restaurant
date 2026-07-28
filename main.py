@@ -2,7 +2,6 @@ from cardapio import Cardapio
 from restaurante import Restaurante
 from utils import validar_inteiro
 
-
 """ 
 TO-DO NEXT: CRIAR A CLASSE PEDIDO
 """
@@ -24,14 +23,23 @@ def main() -> None:
         print("BOAS-VINDAS AO RESTAURANTE!".center(55))
         print("=-" *30)
 
+        _exibir_opcoes()
+        _validar_escolha()
+
+
+    def _exibir_opcoes():
         for chave, (descricao, _) in opcoes.items():
             print(f"[{chave}] - {descricao}")
+
+
+    def _validar_escolha():
         opcao_escolhida = validar_inteiro("Selecione uma das opções: ")
         if opcao_escolhida in opcoes:
             _, funcao = opcoes[opcao_escolhida]
             funcao()
         else:
             print("Opção inválida!")
+
 
     menu_principal()
 
