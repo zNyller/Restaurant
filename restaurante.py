@@ -1,6 +1,7 @@
 from time import sleep
 from cardapio import Cardapio
 from cliente import Cliente
+from mesa import Mesa
 from cozinha import Cozinha
 from utils import validar_string
 
@@ -9,8 +10,27 @@ class Restaurante:
         self.cardapio = cardapio
         self.cozinha = Cozinha()
         self.aberto = False
+        self.mesas = []
         self.clientes = []
         self.pedidos = []
+        self.avaliacoes = 0
+
+        self.criar_mesas()
+
+
+    def criar_mesas(self) -> None:
+        for num in range (1, 7):
+            self.mesas.append(Mesa(num))
+
+
+    def verificar_status(self):
+        print(
+            f"Status atual do restaurante:"
+            f"\nAvaliações: {self.avaliacoes}"
+            f"\nNúmero de mesas: {len(self.mesas)}"
+            f"\nNúmero de clientes: {len(self.clientes)}"
+            f"\nNúmero de pedidos feitos: {len(self.pedidos)}"
+        )
 
 
     def abrir_restaurante(self) -> None:
@@ -23,9 +43,9 @@ class Restaurante:
 
     def atender_cliente(self) -> None:
         cliente = self.cadastrar_cliente()
-        print("Direcionando o cliente à mesa...")
-        sleep(1)
-        self.anotar_pedido(cliente)
+        if self.acomodar_cliente(cliente):
+            sleep(1)
+            self.anotar_pedido(cliente)
 
 
     def cadastrar_cliente(self) -> Cliente:
@@ -36,8 +56,20 @@ class Restaurante:
         return cliente
 
 
+    def acomodar_cliente(self, cliente: Cliente):
+        for mesa in self.mesas:
+            if not mesa.ocupada:
+                mesa.ocupar(cliente)
+                print(f"Cliente {cliente.nome} acomodado à mesa n° {mesa.numero}.")
+                return True
+
+        print("Não há mesas disponíveis!")
+        return False
+
+
     def anotar_pedido(self, cliente: Cliente) -> None:
         pedido = cliente.fazer_pedido(self.cardapio)
+        self.pedidos.append(pedido)
         print(f"Anotando o pedido...")
         sleep(1)
         print(

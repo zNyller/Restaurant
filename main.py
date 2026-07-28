@@ -1,47 +1,18 @@
 from cardapio import Cardapio
 from restaurante import Restaurante
-from utils import validar_inteiro
-
-""" 
-TO-DO NEXT: CRIAR A CLASSE PEDIDO
-"""
+from menu import menu_principal
+from constants import BOAS_VINDAS
 
 
 def main() -> None:
     cardapio = Cardapio()
     restaurante = Restaurante(cardapio)
 
-    opcoes = {
-        1: ("Abrir restaurante", restaurante.abrir_restaurante),
-        2: ("Conferir cardápio", cardapio.exibir_cardapio),
-        3: ("Adicionar um novo prato", cardapio.adicionar_prato)
-    }
+    print(BOAS_VINDAS)
 
-
-    def menu_principal() -> None:
-        print("=-" * 30)
-        print("BOAS-VINDAS AO RESTAURANTE!".center(55))
-        print("=-" *30)
-
-        _exibir_opcoes()
-        _validar_escolha()
-
-
-    def _exibir_opcoes():
-        for chave, (descricao, _) in opcoes.items():
-            print(f"[{chave}] - {descricao}")
-
-
-    def _validar_escolha():
-        opcao_escolhida = validar_inteiro("Selecione uma das opções: ")
-        if opcao_escolhida in opcoes:
-            _, funcao = opcoes[opcao_escolhida]
-            funcao()
-        else:
-            print("Opção inválida!")
-
-
-    menu_principal()
+    running = True
+    while running:
+        running = menu_principal(restaurante, cardapio)
 
 
 if __name__ == "__main__":
