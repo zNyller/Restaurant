@@ -4,6 +4,7 @@ from pedido import Pedido
 class Cliente:
     def __init__(self, nome):
         self.nome = nome
+        self.comanda = 0
 
 
     def fazer_pedido(self, cardapio: Cardapio) -> Pedido:
