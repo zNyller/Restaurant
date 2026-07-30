@@ -20,6 +20,7 @@ class Mesa:
         """Configura a mesa como ocupada e registra o cliente que está nela."""
         self.ocupada = True
         self.cliente = cliente
+        self.cliente.sentar()
 
 
     def registrar_pedido(self, pedido: "Pedido") -> None:

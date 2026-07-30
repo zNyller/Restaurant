@@ -3,7 +3,24 @@ from restaurante import Restaurante
 from menu import menu_principal
 from constants import BOAS_VINDAS
 
-# TO-DO NEXT: APRIMORAR AS CLASSES EXISTENTES E SEUS ESTADOS | Ex: Classe PEDIDO
+""" TO-DO NEXT: RESTAURANTE coordenar os acontecimentos do turno.
+
+Ex:
+while self.aberto:
+    self.talvez_chegue_cliente()
+
+    self.proximo_turno()
+
+    self.acomodar_clientes()
+
+    self.coletar_pedidos()
+
+    self.entregar_pedidos()
+
+    self.finalizar_atendimentos()
+
+    self.encerrar()
+"""
 
 def main() -> None:
     cardapio = Cardapio()

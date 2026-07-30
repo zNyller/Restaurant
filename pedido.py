@@ -8,21 +8,31 @@ class Pedido:
         self.bebida = bebida
         self.valor = prato.preco + bebida.preco
         self.mesa = None
-        self.status = None
+        self.status = "criado"
+
+
+    def na_fila(self):
+        self.status = "na fila"
 
 
     def preparando(self):
         self.status = "preparando"
 
 
-    def finalizar(self):
+    def finalizado(self):
         self.status = "finalizado"
 
 
-    def entregar(self, mesa: Mesa):
+    def entregue(self, mesa: Mesa):
         self.status = "entregue"
         print(f"Pedido entregue na mesa n° {mesa.numero}.")
 
 
     def verificar_status(self):
         print(f"Status do pedido: {self.status}")
+
+
+    def esta_pronto(self):
+        if self.status == "finalizado":
+            return True
+        return False
