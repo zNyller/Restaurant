@@ -10,6 +10,7 @@ class Mesa:
         self.ocupada = False
         self.cliente = None
         self.pedido = None
+        self.pedido_recebido = False
 
 
     def esta_livre(self) -> bool:
@@ -26,6 +27,14 @@ class Mesa:
     def registrar_pedido(self, pedido: "Pedido") -> None:
         """Registra e vincula o pedido feito à mesa atual."""
         self.pedido = pedido
+
+
+    def receber_pedido(self):
+        self.pedido_recebido = True
+
+
+    def recebeu_pedido(self) -> bool:
+        return self.pedido_recebido
 
 
     def liberar(self) -> None:

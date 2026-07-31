@@ -23,8 +23,13 @@ class Pedido:
         self.status = "finalizado"
 
 
-    def entregue(self, mesa: Mesa):
+    def vincular(self, mesa: Mesa):
+        self.mesa = mesa
+
+
+    def entregar(self, mesa: Mesa):
         self.status = "entregue"
+        mesa.receber_pedido()
         print(f"Pedido entregue na mesa n° {mesa.numero}.")
 
 

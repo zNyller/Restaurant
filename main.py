@@ -7,15 +7,15 @@ from constants import BOAS_VINDAS
 
 Ex:
 while self.aberto:
-    self.talvez_chegue_cliente()
+    self.talvez_chegue_cliente()  FEITO ✅
 
-    self.proximo_turno()
+    self.proximo_turno()  FEITO ✅
 
-    self.acomodar_clientes()
+    self.acomodar_clientes()  FEITO ✅
 
-    self.coletar_pedidos()
+    self.coletar_pedidos()  FEITO ✅
 
-    self.entregar_pedidos()
+    self.entregar_pedidos()  FEITO ✅
 
     self.finalizar_atendimentos()
 

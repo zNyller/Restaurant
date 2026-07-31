@@ -16,6 +16,7 @@ class Restaurante:
         self.aberto = False
         self.turno = 1
         self.mesas = []
+        self.fila = []
         self.clientes = []
         self.pedidos = []
         self.avaliacoes = 0
@@ -24,16 +25,14 @@ class Restaurante:
 
 
     def proximo_turno(self) -> None:
+        self.turno += 1
+
         print(f"\n===== TURNO {self.turno} =====")
 
         for cliente in self.clientes:
             cliente.atualizar(self.TEMPO_POR_TURNO)
 
         self.cozinha.atualizar(self.TEMPO_POR_TURNO)
-
-        self.verificar_eventos()
-
-        self.turno += 1
 
 
     def criar_mesas(self) -> None:
@@ -58,19 +57,30 @@ class Restaurante:
         print("Abrindo restaurante...")
         self.aberto = True
 
+        print(f"\n===== TURNO {self.turno} =====")
+
         while self.aberto:
             self.talvez_chegue_cliente()
+            self.acomodar_clientes()
             self.proximo_turno()
-            self.verificar_eventos()
-            self.encerrar()
+            self.coletar_pedidos()
+            self.entregar_pedidos()
+            if self.turno >= 10:
+                self.encerrar()
 
 
-    def verificar_eventos(self) -> None:
+    def acomodar_clientes(self) -> None:
         for cliente in self.clientes:
             if cliente.chegou():
                 self.atender_cliente(cliente)
             if cliente.esta_sentado():
                 cliente.fazer_pedido(self.cardapio)
+
+
+    def coletar_pedidos(self) -> None:
+        for cliente in self.clientes:
+            if cliente.esta_sentado():
+                self.anotar_pedido(cliente, cliente.mesa)
 
 
     def talvez_chegue_cliente(self) -> None:
@@ -79,6 +89,7 @@ class Restaurante:
             self.recepcionar_cliente()
         else:
             print("Nenhum cliente chegou neste turno.")
+
 
     def recepcionar_cliente(self) -> None:
         """Recepciona o cliente [adicionar incrementação posteriormente]"""
@@ -98,19 +109,15 @@ class Restaurante:
         """Realiza o atendimento do cliente, da acomodação até a entrega do pedido."""
         mesa = self.acomodar_cliente(cliente)
 
+        # Se não conseguiu acomodar (sem mesas disponíveis)
         if mesa is None:
-            print("Nenhuma mesa disponível.")
+            print("Nenhuma mesa disponível... cliente inserido na fila.")
+            self.fila.append(cliente)
             return 
 
         if cliente.esta_sentado():
             pedido = self.anotar_pedido(cliente, mesa)
             self.enviar_para_cozinha(pedido)
-
-            if pedido.esta_pronto() and cliente.esta_aguardando_pedido():
-                self.entregar_pedido(mesa)
-                if cliente.esta_consumindo():
-                    self.finalizar_atendimento(mesa)
-                    self.encerrar()
 
 
     def acomodar_cliente(self, cliente: Cliente) -> Mesa | None:
@@ -121,6 +128,7 @@ class Restaurante:
         for mesa in self.mesas:
             if mesa.esta_livre():
                 mesa.ocupar(cliente)
+                cliente.ocupar(mesa)
                 print(f"Cliente acomodado à mesa n° {mesa.numero}.")
                 return mesa
 
@@ -132,11 +140,14 @@ class Restaurante:
         pedido = cliente.fazer_pedido(self.cardapio)
         self.pedidos.append(pedido)
         mesa.registrar_pedido(pedido)
+        pedido.vincular(mesa)
+        cliente.aguardar_pedido()
 
-        print(f"Anotando o pedido (Mesa n° {mesa.numero})...")
+        print(f"Anotando o pedido...")
         print(
             f"O cliente pediu {pedido.prato.nome} e {pedido.bebida.nome}, "
-            f"no valor total de R${pedido.valor:.2f}"
+            f"no valor total de R${pedido.valor:.2f} "
+            f"\nTempo estimado: {pedido.prato.tempo}min"
         )
 
         return pedido
@@ -148,10 +159,11 @@ class Restaurante:
         self.cozinha.receber_pedido(pedido)
 
 
-    def entregar_pedido(self, mesa: Mesa) -> None:
-        """Realiza a entrega do pedido."""
-        pedido = mesa.pedido
-        pedido.entregue(mesa)
+    def entregar_pedidos(self) -> None:
+        """Verificar se há pedidos prontos e realiza a entrega."""
+        for pedido in self.pedidos:
+            if pedido.esta_pronto():
+                pedido.entregar(pedido.mesa)
 
 
     def finalizar_atendimento(self, mesa: Mesa):
@@ -159,7 +171,7 @@ class Restaurante:
 
 
     def encerrar(self) -> None:
-        print("1. Aguardar próximo cliente \n2. Encerrar por hoje")
+        print("1. Aguardar próximo cliente \n2. Encerrar atendimentos")
         decisao = validar_inteiro("Qual a decisão? ")
 
         if decisao == 2:

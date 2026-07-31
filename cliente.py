@@ -1,3 +1,4 @@
+from mesa import Mesa
 from cardapio import Cardapio
 from pedido import Pedido
 
@@ -5,6 +6,7 @@ class Cliente:
     def __init__(self, nome) -> None:
         self.nome = nome
         self.status = 'chegou'
+        self.mesa = None
         self.pedido = None
         self.tempo_comendo: int = 30
         self.tempo_pagando: int = 20
@@ -13,7 +15,7 @@ class Cliente:
 
     def atualizar(self, minutos: int) -> None:
         """Avança um turno de clientes."""
-        if self.status == 'aguardando pedido' and self.pedido.esta_pronto():
+        if self.status == 'aguardando pedido' and self.mesa.recebeu_pedido():
             self.consumir(self.pedido)
 
         if self.status == 'comendo':
@@ -51,6 +53,10 @@ class Cliente:
         return self.status == 'sentou'
 
 
+    def ocupar(self, mesa: Mesa) -> None:
+        self.mesa = mesa
+
+
     def aguardar_pedido(self) -> None:
         self.status = 'aguardando pedido'
 
@@ -72,6 +78,7 @@ class Cliente:
 
     def consumir(self, pedido: Pedido) -> None:
         self.status = 'comendo'
+        print(f"{self.nome} está comendo o {pedido.prato.nome}...")
 
 
     def esta_consumindo(self) -> bool:
