@@ -1,6 +1,14 @@
+from enum import Enum
 from prato import Prato
 from bebida import Bebida
 from mesa import Mesa
+
+class Status(Enum):
+    CRIADO = 'criado'
+    NA_FILA = 'na fila'
+    PREPARANDO = 'preparando'
+    FINALIZADO = 'finalizado'
+    ENTREGUE = 'entregue'
 
 class Pedido:
     def __init__(self, prato: Prato, bebida: Bebida):
@@ -8,19 +16,19 @@ class Pedido:
         self.bebida = bebida
         self.valor = prato.preco + bebida.preco
         self.mesa = None
-        self.status = "criado"
+        self.status = Status.CRIADO
 
 
     def na_fila(self):
-        self.status = "na fila"
+        self.status = Status.NA_FILA
 
 
     def preparando(self):
-        self.status = "preparando"
+        self.status = Status.PREPARANDO
 
 
     def finalizado(self):
-        self.status = "finalizado"
+        self.status = Status.FINALIZADO
 
 
     def vincular(self, mesa: Mesa):
@@ -28,7 +36,7 @@ class Pedido:
 
 
     def entregar(self, mesa: Mesa):
-        self.status = "entregue"
+        self.status = Status.ENTREGUE
         mesa.receber_pedido()
         print(f"Pedido entregue na mesa n° {mesa.numero}.")
 
@@ -38,6 +46,6 @@ class Pedido:
 
 
     def esta_pronto(self):
-        if self.status == "finalizado":
+        if self.status == Status.FINALIZADO:
             return True
         return False

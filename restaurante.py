@@ -15,24 +15,13 @@ class Restaurante:
         self.cozinha = Cozinha()
         self.aberto = False
         self.turno = 1
-        self.mesas = []
         self.fila = []
-        self.clientes = []
-        self.pedidos = []
+        self.mesas: list[Mesa] = []
+        self.clientes: list[Cliente] = []
+        self.pedidos: list[Pedido] = []
         self.avaliacoes = 0
 
         self.criar_mesas()
-
-
-    def proximo_turno(self) -> None:
-        self.turno += 1
-
-        print(f"\n===== TURNO {self.turno} =====")
-
-        for cliente in self.clientes:
-            cliente.atualizar(self.TEMPO_POR_TURNO)
-
-        self.cozinha.atualizar(self.TEMPO_POR_TURNO)
 
 
     def criar_mesas(self) -> None:
@@ -65,30 +54,45 @@ class Restaurante:
             self.proximo_turno()
             self.coletar_pedidos()
             self.entregar_pedidos()
+            self.finalizar_atendimentos()
             if self.turno >= 10:
                 self.encerrar()
 
 
+    def talvez_chegue_cliente(self) -> None:
+        """Define uma chance de 50% de um cliente chegar ao restaurante.
+        Caso chegue, o recepciona. Caso contrário, exibe que não chegou."""
+        if random.random() < 0.5:
+            print("Um cliente chegou!")
+            self.recepcionar_cliente()
+        else:
+            print("Nenhum cliente chegou neste turno.")
+
+
     def acomodar_clientes(self) -> None:
+        """Percorre a lista de clientes e verifica quais estão aguardando atendimento, 
+        em seguida prossegue com a acomodação dos mesmos."""
         for cliente in self.clientes:
-            if cliente.chegou():
+            if cliente.aguardando_atendimento():
                 self.atender_cliente(cliente)
-            if cliente.esta_sentado():
-                cliente.fazer_pedido(self.cardapio)
+
+
+    def proximo_turno(self) -> None:
+        """Processa o próximo turno de eventos, atualizando objetos."""
+        self.turno += 1
+
+        print(f"\n===== TURNO {self.turno} =====")
+
+        for cliente in self.clientes:
+            cliente.atualizar(self.TEMPO_POR_TURNO)
+
+        self.cozinha.atualizar(self.TEMPO_POR_TURNO)
 
 
     def coletar_pedidos(self) -> None:
         for cliente in self.clientes:
             if cliente.esta_sentado():
                 self.anotar_pedido(cliente, cliente.mesa)
-
-
-    def talvez_chegue_cliente(self) -> None:
-        if random.random() < 0.5:
-            print("Um cliente chegou!")
-            self.recepcionar_cliente()
-        else:
-            print("Nenhum cliente chegou neste turno.")
 
 
     def recepcionar_cliente(self) -> None:
@@ -137,11 +141,7 @@ class Restaurante:
 
     def anotar_pedido(self, cliente: Cliente, mesa: Mesa) -> Pedido:
         """Anota o pedido feito pelo cliente, registra na lista de pedidos e o retorna."""
-        pedido = cliente.fazer_pedido(self.cardapio)
-        self.pedidos.append(pedido)
-        mesa.registrar_pedido(pedido)
-        pedido.vincular(mesa)
-        cliente.aguardar_pedido()
+        pedido = cliente.realizar_pedido(self.cardapio)
 
         print(f"Anotando o pedido...")
         print(
@@ -149,6 +149,11 @@ class Restaurante:
             f"no valor total de R${pedido.valor:.2f} "
             f"\nTempo estimado: {pedido.prato.tempo}min"
         )
+
+        self.pedidos.append(pedido)
+        mesa.registrar_pedido(pedido)
+        pedido.vincular(mesa)
+        cliente.aguardar_pedido()
 
         return pedido
 
@@ -166,8 +171,11 @@ class Restaurante:
                 pedido.entregar(pedido.mesa)
 
 
-    def finalizar_atendimento(self, mesa: Mesa):
-        mesa.liberar()
+    def finalizar_atendimentos(self) -> None:
+        """Verifica se há atendimentos para finalizar, e se houver, libera a mesa."""
+        for cliente in self.clientes:
+            if cliente.esta_pagando():
+                cliente.mesa.liberar()
 
 
     def encerrar(self) -> None:

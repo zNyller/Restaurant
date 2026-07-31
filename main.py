@@ -3,23 +3,18 @@ from restaurante import Restaurante
 from menu import menu_principal
 from constants import BOAS_VINDAS
 
-""" TO-DO NEXT: RESTAURANTE coordenar os acontecimentos do turno.
+""" TO-DO NEXT:
 
-Ex:
-while self.aberto:
-    self.talvez_chegue_cliente()  FEITO ✅
+- Cliente decidir suas próprias ações com base no seu estado.
 
-    self.proximo_turno()  FEITO ✅
+- Mesa assume mais responsabilidades relacionadas à própria ocupação.
 
-    self.acomodar_clientes()  FEITO ✅
+- Restaurante passa a apenas coordenar os sistemas.
 
-    self.coletar_pedidos()  FEITO ✅
+- Remover chamadas duplicadas e estados intermediários desnecessários.
 
-    self.entregar_pedidos()  FEITO ✅
+- Refinar comunicação entre objetos (eventos, notificações, etc.).
 
-    self.finalizar_atendimentos()
-
-    self.encerrar()
 """
 
 def main() -> None:
