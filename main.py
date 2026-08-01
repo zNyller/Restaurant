@@ -5,14 +5,6 @@ from constants import BOAS_VINDAS
 
 """ TO-DO NEXT:
 
-- Cliente decidir suas próprias ações com base no seu estado.
-
-- Mesa assume mais responsabilidades relacionadas à própria ocupação.
-
-- Restaurante passa a apenas coordenar os sistemas.
-
-- Remover chamadas duplicadas e estados intermediários desnecessários.
-
 - Refinar comunicação entre objetos (eventos, notificações, etc.).
 
 """

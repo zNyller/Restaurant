@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from cardapio import Cardapio
 
 if TYPE_CHECKING:
     from cliente import Cliente
@@ -9,7 +10,9 @@ class Mesa:
         self.numero = numero
         self.ocupada = False
         self.cliente = None
+        self.cardapio = None
         self.pedido = None
+        self.pedido_registrado = False
         self.pedido_recebido = False
 
 
@@ -17,16 +20,24 @@ class Mesa:
         return not self.ocupada
 
 
-    def ocupar(self, cliente: "Cliente") -> None:
+    def receber(self, cliente: "Cliente", cardapio: Cardapio) -> None:
         """Configura a mesa como ocupada e registra o cliente que está nela."""
         self.ocupada = True
         self.cliente = cliente
+        self.cardapio = cardapio
         self.cliente.sentar()
+        self.cliente.ocupar(self)
 
 
     def registrar_pedido(self, pedido: "Pedido") -> None:
         """Registra e vincula o pedido feito à mesa atual."""
         self.pedido = pedido
+        self.pedido_registrado = True
+        self.pedido.vincular(self)
+
+
+    def registrou_pedido(self) -> bool:
+        return self.pedido_registrado
 
 
     def receber_pedido(self):

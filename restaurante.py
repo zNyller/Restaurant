@@ -1,7 +1,8 @@
 import random
+from salao import Salao
 from cardapio import Cardapio
+from garcom import Garcom
 from cliente import Cliente
-from mesa import Mesa
 from pedido import Pedido
 from cozinha import Cozinha
 from utils import validar_string, validar_inteiro
@@ -12,22 +13,15 @@ class Restaurante:
 
     def __init__(self, cardapio: Cardapio) -> None:
         self.cardapio = cardapio
+        self.salao = Salao()
         self.cozinha = Cozinha()
+        self.garcom = Garcom(self.salao, self.cozinha, self.cardapio)
         self.aberto = False
         self.turno = 1
         self.fila = []
-        self.mesas: list[Mesa] = []
         self.clientes: list[Cliente] = []
         self.pedidos: list[Pedido] = []
         self.avaliacoes = 0
-
-        self.criar_mesas()
-
-
-    def criar_mesas(self) -> None:
-        """Cria as mesas do restaurante e as adiciona à lista de mesas."""
-        for num in range (1, 7):
-            self.mesas.append(Mesa(num))
 
 
     def verificar_status(self) -> None:
@@ -35,7 +29,7 @@ class Restaurante:
         print(
             f"Status atual do restaurante:"
             f"\nAvaliações: {self.avaliacoes}"
-            f"\nNúmero de mesas: {len(self.mesas)}"
+            f"\nNúmero de mesas: {len(self.salao.mesas)}"
             f"\nNúmero de clientes: {len(self.clientes)}"
             f"\nNúmero de pedidos feitos: {len(self.pedidos)}"
         )
@@ -52,9 +46,6 @@ class Restaurante:
             self.talvez_chegue_cliente()
             self.acomodar_clientes()
             self.proximo_turno()
-            self.coletar_pedidos()
-            self.entregar_pedidos()
-            self.finalizar_atendimentos()
             if self.turno >= 10:
                 self.encerrar()
 
@@ -64,40 +55,9 @@ class Restaurante:
         Caso chegue, o recepciona. Caso contrário, exibe que não chegou."""
         if random.random() < 0.5:
             print("Um cliente chegou!")
-            self.recepcionar_cliente()
+            self.cadastrar_cliente()
         else:
             print("Nenhum cliente chegou neste turno.")
-
-
-    def acomodar_clientes(self) -> None:
-        """Percorre a lista de clientes e verifica quais estão aguardando atendimento, 
-        em seguida prossegue com a acomodação dos mesmos."""
-        for cliente in self.clientes:
-            if cliente.aguardando_atendimento():
-                self.atender_cliente(cliente)
-
-
-    def proximo_turno(self) -> None:
-        """Processa o próximo turno de eventos, atualizando objetos."""
-        self.turno += 1
-
-        print(f"\n===== TURNO {self.turno} =====")
-
-        for cliente in self.clientes:
-            cliente.atualizar(self.TEMPO_POR_TURNO)
-
-        self.cozinha.atualizar(self.TEMPO_POR_TURNO)
-
-
-    def coletar_pedidos(self) -> None:
-        for cliente in self.clientes:
-            if cliente.esta_sentado():
-                self.anotar_pedido(cliente, cliente.mesa)
-
-
-    def recepcionar_cliente(self) -> None:
-        """Recepciona o cliente [adicionar incrementação posteriormente]"""
-        self.cadastrar_cliente()
 
 
     def cadastrar_cliente(self) -> Cliente:
@@ -109,73 +69,26 @@ class Restaurante:
         return cliente
 
 
-    def atender_cliente(self, cliente: Cliente) -> None:
-        """Realiza o atendimento do cliente, da acomodação até a entrega do pedido."""
-        mesa = self.acomodar_cliente(cliente)
-
-        # Se não conseguiu acomodar (sem mesas disponíveis)
-        if mesa is None:
-            print("Nenhuma mesa disponível... cliente inserido na fila.")
-            self.fila.append(cliente)
-            return 
-
-        if cliente.esta_sentado():
-            pedido = self.anotar_pedido(cliente, mesa)
-            self.enviar_para_cozinha(pedido)
-
-
-    def acomodar_cliente(self, cliente: Cliente) -> Mesa | None:
-        """
-        Acomoda o cliente e retorna a mesa que foi ocupada, caso haja alguma disponível.
-        Se não, retorna False.
-        """
-        for mesa in self.mesas:
-            if mesa.esta_livre():
-                mesa.ocupar(cliente)
-                cliente.ocupar(mesa)
-                print(f"Cliente acomodado à mesa n° {mesa.numero}.")
-                return mesa
-
-        return None
-
-
-    def anotar_pedido(self, cliente: Cliente, mesa: Mesa) -> Pedido:
-        """Anota o pedido feito pelo cliente, registra na lista de pedidos e o retorna."""
-        pedido = cliente.realizar_pedido(self.cardapio)
-
-        print(f"Anotando o pedido...")
-        print(
-            f"O cliente pediu {pedido.prato.nome} e {pedido.bebida.nome}, "
-            f"no valor total de R${pedido.valor:.2f} "
-            f"\nTempo estimado: {pedido.prato.tempo}min"
-        )
-
-        self.pedidos.append(pedido)
-        mesa.registrar_pedido(pedido)
-        pedido.vincular(mesa)
-        cliente.aguardar_pedido()
-
-        return pedido
-
-
-    def enviar_para_cozinha(self, pedido: Pedido) -> None:
-        """Envia o pedido à cozinha para ser preparado."""
-        print("Enviando o pedido à cozinha...")
-        self.cozinha.receber_pedido(pedido)
-
-
-    def entregar_pedidos(self) -> None:
-        """Verificar se há pedidos prontos e realiza a entrega."""
-        for pedido in self.pedidos:
-            if pedido.esta_pronto():
-                pedido.entregar(pedido.mesa)
-
-
-    def finalizar_atendimentos(self) -> None:
-        """Verifica se há atendimentos para finalizar, e se houver, libera a mesa."""
+    def acomodar_clientes(self) -> None:
+        """Percorre a lista de clientes e verifica quais estão aguardando atendimento, 
+        em seguida prossegue com a acomodação dos mesmos."""
         for cliente in self.clientes:
-            if cliente.esta_pagando():
-                cliente.mesa.liberar()
+            if cliente.aguardando_atendimento():
+                self.garcom.acomodar_cliente(cliente)
+
+
+    def proximo_turno(self) -> None:
+        """Processa o próximo turno de eventos, atualizando objetos."""
+        self.turno += 1
+
+        print(f"\n===== TURNO {self.turno} =====")
+
+        for cliente in self.clientes:
+            cliente.atualizar(self.TEMPO_POR_TURNO)
+
+        self.garcom.atualizar()
+
+        self.cozinha.atualizar(self.TEMPO_POR_TURNO)
 
 
     def encerrar(self) -> None:

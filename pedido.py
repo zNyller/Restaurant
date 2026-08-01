@@ -35,10 +35,11 @@ class Pedido:
         self.mesa = mesa
 
 
-    def entregar(self, mesa: Mesa):
+    def entregar(self):
+        """Marca o pedido como entregue e notifica a mesa."""
         self.status = Status.ENTREGUE
-        mesa.receber_pedido()
-        print(f"Pedido entregue na mesa n° {mesa.numero}.")
+        self.mesa.receber_pedido()
+        print(f"Pedido entregue na mesa n° {self.mesa.numero}.")
 
 
     def verificar_status(self):
@@ -46,6 +47,4 @@ class Pedido:
 
 
     def esta_pronto(self):
-        if self.status == Status.FINALIZADO:
-            return True
-        return False
+        return self.status == Status.FINALIZADO

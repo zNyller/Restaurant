@@ -6,6 +6,8 @@ from pedido import Pedido
 class Status(Enum):
     AGUARDANDO_ATENDIMENTO = 'aguardando atendimento'
     SENTOU = 'sentou'
+    QUER_PEDIR = 'quer pedir'
+    REALIZANDO_PEDIDO = 'realizando pedido'
     AGUARDANDO_PEDIDO = 'aguardando pedido'
     COMENDO = 'comendo'
     PAGANDO = 'pagando'
@@ -25,8 +27,15 @@ class Cliente:
 
     def atualizar(self, minutos: int) -> None:
         """Avança um turno de clientes."""
+
+        if self.status == Status.SENTOU:
+            self.status = Status.QUER_PEDIR
+
+        if self.status == Status.REALIZANDO_PEDIDO and self.mesa.registrou_pedido():
+            self.status = Status.AGUARDANDO_PEDIDO
+
         if self.status == Status.AGUARDANDO_PEDIDO and self.mesa.recebeu_pedido():
-            self.consumir(self.pedido)
+            self.consumir()
 
         if self.status == Status.COMENDO:
             self.tempo_comendo -= minutos
@@ -43,6 +52,7 @@ class Cliente:
             self.tempo_pagando -= minutos
             if self.tempo_pagando <= 0:
                 self.avaliar()
+                self.mesa.liberar()
             else:
                 turnos_restantes = self.tempo_pagando / minutos
                 print(
@@ -67,6 +77,10 @@ class Cliente:
         self.mesa = mesa
 
 
+    def quer_pedir(self) -> bool:
+        return self.status == Status.QUER_PEDIR
+
+
     def aguardar_pedido(self) -> None:
         self.status = Status.AGUARDANDO_PEDIDO
 
@@ -75,7 +89,7 @@ class Cliente:
         return self.status == Status.AGUARDANDO_PEDIDO
 
 
-    def realizar_pedido(self, cardapio: Cardapio) -> Pedido:
+    def receber_cardapio(self, cardapio: Cardapio) -> None:
         """
         Recebe o cardápio como parâmetro para acessar os pratos e bebidas
         e monta um pedido aleatório, que ao final é retornado.
@@ -83,12 +97,21 @@ class Cliente:
         prato = cardapio.prato_aleatorio()
         bebida = cardapio.bebida_aleatoria()
         self.pedido = Pedido(prato, bebida)
+        self.status = Status.REALIZANDO_PEDIDO
+
+
+    def realizando_pedido(self) -> bool:
+        return self.status == Status.REALIZANDO_PEDIDO
+
+
+    def comunicar_pedido(self) -> Pedido:
+        """Vincula o pedido à mesa e o retorna."""
+        #self.mesa.registrar_pedido(self.pedido)
         return self.pedido
 
 
-    def consumir(self, pedido: Pedido) -> None:
+    def consumir(self) -> None:
         self.status = Status.COMENDO
-        print(f"{self.nome} está comendo o {pedido.prato.nome}...")
 
 
     def esta_consumindo(self) -> bool:
