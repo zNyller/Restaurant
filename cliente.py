@@ -1,12 +1,10 @@
 from enum import Enum
 from mesa import Mesa
-from cardapio import Cardapio
 from pedido import Pedido
 
 class Status(Enum):
     AGUARDANDO_ATENDIMENTO = 'aguardando atendimento'
     SENTOU = 'sentou'
-    QUER_PEDIR = 'quer pedir'
     REALIZANDO_PEDIDO = 'realizando pedido'
     AGUARDANDO_PEDIDO = 'aguardando pedido'
     COMENDO = 'comendo'
@@ -29,9 +27,6 @@ class Cliente:
         """Avança um turno de clientes."""
 
         if self.status == Status.SENTOU:
-            self.status = Status.QUER_PEDIR
-
-        if self.status == Status.QUER_PEDIR:
             self.realizar_pedido()
 
         if self.status == Status.REALIZANDO_PEDIDO and self.mesa.registrou_pedido():
@@ -80,10 +75,6 @@ class Cliente:
         self.mesa = mesa
 
 
-    def quer_pedir(self) -> bool:
-        return self.status == Status.QUER_PEDIR
-
-
     def aguardar_pedido(self) -> None:
         self.status = Status.AGUARDANDO_PEDIDO
 
@@ -93,11 +84,12 @@ class Cliente:
 
 
     def realizar_pedido(self) -> None:
-        """Monta um pedido aleatório utilizando o cardapio à mesa."""
+        """Monta um pedido aleatório utilizando o cardapio à mesa e notifica o garçom."""
         prato = self.mesa.cardapio.prato_aleatorio()
         bebida = self.mesa.cardapio.bebida_aleatoria()
         self.pedido = Pedido(prato, bebida)
         self.status = Status.REALIZANDO_PEDIDO
+        self.mesa.garcom.notificar_pedido(self)
 
 
     def realizando_pedido(self) -> bool:

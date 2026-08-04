@@ -15,11 +15,11 @@ class Restaurante:
     def __init__(self, cardapio: Cardapio) -> None:
         self.cardapio = cardapio
         self.salao = Salao()
-        self.recepcao = Recepcao(self.salao, self.cardapio)
         self.cozinha = Cozinha()
-        self.garcom = Garcom(self.recepcao, self.salao, self.cozinha, self.cardapio)
+        self.garcom = Garcom(self.salao, self.cozinha, self.cardapio)
+        self.recepcao = Recepcao(self.salao, self.cardapio, self.garcom)
         self.aberto = False
-        self.turno = 1
+        self.turno = 0
         self.clientes: list[Cliente] = []
         self.pedidos: list[Pedido] = []
         self.avaliacoes = 0
@@ -41,10 +41,7 @@ class Restaurante:
         print("Abrindo restaurante...")
         self.aberto = True
 
-        print(f"\n===== TURNO {self.turno} =====")
-
         while self.aberto:
-            self.talvez_chegue_cliente()
             self.proximo_turno()
             if self.turno >= 5:
                 self.encerrar()
@@ -64,6 +61,8 @@ class Restaurante:
         """Processa o próximo turno de eventos, atualizando objetos."""
         self.turno += 1
         print(f"\n===== TURNO {self.turno} =====")
+
+        self.talvez_chegue_cliente()
 
         for cliente in self.recepcao.clientes:
             cliente.atualizar(self.TEMPO_POR_TURNO)

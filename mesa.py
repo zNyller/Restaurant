@@ -4,14 +4,16 @@ from cardapio import Cardapio
 if TYPE_CHECKING:
     from cliente import Cliente
     from pedido import Pedido
+    from garcom import Garcom
 
 class Mesa:
     def __init__(self, numero: int):
         self.numero = numero
         self.ocupada = False
-        self.cliente = None
-        self.cardapio = None
-        self.pedido = None
+        self.cardapio: Cardapio = None
+        self.cliente: "Cliente" = None
+        self.garcom: "Garcom" = None
+        self.pedido: "Pedido" = None
         self.pedido_registrado = False
         self.pedido_recebido = False
 
@@ -20,11 +22,12 @@ class Mesa:
         return not self.ocupada
 
 
-    def receber(self, cliente: "Cliente", cardapio: Cardapio) -> None:
+    def receber(self, cliente: "Cliente", cardapio: Cardapio, garcom: "Garcom") -> None:
         """Configura a mesa como ocupada e registra o cliente que está nela."""
         self.ocupada = True
         self.cliente = cliente
         self.cardapio = cardapio
+        self.garcom = garcom
         self.cliente.sentar()
         self.cliente.ocupar(self)
 

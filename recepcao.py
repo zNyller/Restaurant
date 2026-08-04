@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 from salao import Salao
+from garcom import Garcom
 from cliente import Cliente
 from cardapio import Cardapio
 from utils import validar_string
@@ -8,9 +9,10 @@ if TYPE_CHECKING:
     from mesa import Mesa
 
 class Recepcao:
-    def __init__(self, salao: Salao, cardapio: Cardapio):
+    def __init__(self, salao: Salao, cardapio: Cardapio, garcom: Garcom):
         self.salao = salao
         self.cardapio = cardapio
+        self.garcom = garcom
         self.clientes: list[Cliente] = []
         self.fila: list[Cliente] = []
 
@@ -39,16 +41,12 @@ class Recepcao:
             self._inserir_cliente_na_fila(cliente)
             return
 
-        mesa.receber(cliente, self.cardapio)
-
-        # Mesa recebe o cliente -> Fazer o garçom verificar as mesas para prosseguir com os atendimentos
-
-
+        mesa.receber(cliente, self.cardapio, self.garcom)
 
         print(f"{cliente.nome} acomodado à mesa n° {mesa.numero}")
 
 
-    def _localizar_mesa(self) -> Mesa | None:
+    def _localizar_mesa(self) -> "Mesa" | None:
         for mesa in self.salao.mesas:
             if mesa.esta_livre():
                 return mesa
