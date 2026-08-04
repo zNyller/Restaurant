@@ -5,7 +5,6 @@ from pedido import Pedido
 class Status(Enum):
     AGUARDANDO_ATENDIMENTO = 'aguardando atendimento'
     SENTOU = 'sentou'
-    REALIZANDO_PEDIDO = 'realizando pedido'
     AGUARDANDO_PEDIDO = 'aguardando pedido'
     COMENDO = 'comendo'
     PAGANDO = 'pagando'
@@ -28,12 +27,6 @@ class Cliente:
 
         if self.status == Status.SENTOU:
             self.realizar_pedido()
-
-        if self.status == Status.REALIZANDO_PEDIDO and self.mesa.registrou_pedido():
-            self.status = Status.AGUARDANDO_PEDIDO
-
-        if self.status == Status.AGUARDANDO_PEDIDO and self.mesa.recebeu_pedido():
-            self.consumir()
 
         if self.status == Status.COMENDO:
             self.tempo_comendo -= minutos
@@ -72,6 +65,7 @@ class Cliente:
 
 
     def ocupar(self, mesa: Mesa) -> None:
+        """Vincula a mesa ao cliente."""
         self.mesa = mesa
 
 
@@ -90,10 +84,6 @@ class Cliente:
         self.pedido = Pedido(prato, bebida)
         self.status = Status.REALIZANDO_PEDIDO
         self.mesa.garcom.notificar_pedido(self)
-
-
-    def realizando_pedido(self) -> bool:
-        return self.status == Status.REALIZANDO_PEDIDO
 
 
     def comunicar_pedido(self) -> Pedido:

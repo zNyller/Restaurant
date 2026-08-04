@@ -14,7 +14,6 @@ class Mesa:
         self.cliente: "Cliente" = None
         self.garcom: "Garcom" = None
         self.pedido: "Pedido" = None
-        self.pedido_registrado = False
         self.pedido_recebido = False
 
 
@@ -33,18 +32,16 @@ class Mesa:
 
 
     def registrar_pedido(self, pedido: "Pedido") -> None:
-        """Registra e vincula o pedido feito à mesa atual."""
+        """Vincula o pedido à mesa, e avisa o cliente que pode aguardar."""
         self.pedido = pedido
-        self.pedido_registrado = True
         self.pedido.vincular(self)
-
-
-    def registrou_pedido(self) -> bool:
-        return self.pedido_registrado
+        self.cliente.aguardar_pedido()
 
 
     def receber_pedido(self):
+        """Registra o pedido como recebido, e avisa o cliente que pode consumir."""
         self.pedido_recebido = True
+        self.cliente.consumir()
 
 
     def recebeu_pedido(self) -> bool:
