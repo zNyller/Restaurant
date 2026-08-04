@@ -1,3 +1,4 @@
+from recepcao import Recepcao
 from salao import Salao
 from cozinha import Cozinha
 from cardapio import Cardapio
@@ -6,7 +7,14 @@ from cliente import Cliente
 from pedido import Pedido
 
 class Garcom:
-    def __init__(self, salao: Salao, cozinha: Cozinha, cardapio: Cardapio) -> None: 
+    def __init__(
+            self, 
+            recepcao: Recepcao, 
+            salao: Salao, 
+            cozinha: Cozinha, 
+            cardapio: Cardapio
+        ) -> None:
+        self.recepcao = recepcao 
         self.salao = salao
         self.cozinha = cozinha
         self.cardapio = cardapio
@@ -19,31 +27,9 @@ class Garcom:
         self._entregar_pedidos()
 
 
-    def acomodar_cliente(self, cliente: Cliente) -> None:
-        self.clientes.append(cliente)
-        mesa = self._localizar_mesa()
-
-        if mesa is None:
-            print("Nenhuma mesa disponível no momento. Cliente inserido na fila...")
-            self.restaurante.fila.append(cliente)
-            return
-
-        mesa.receber(cliente, self.cardapio)
-        print(f"{cliente.nome} acomodado à mesa n° {mesa.numero}")
-
-
-    def _localizar_mesa(self) -> Mesa | None:
-        for mesa in self.salao.mesas:
-            if mesa.esta_livre():
-                return mesa
-
-        return None
-
-
     def _coletar_pedidos(self) -> None:
-        for cliente in self.clientes:
+        for cliente in self.recepcao.clientes:
             if cliente.quer_pedir():
-                cliente.receber_cardapio(self.cardapio)
                 pedido = cliente.comunicar_pedido()
 
                 print(f"Anotando o pedido...")

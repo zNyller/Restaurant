@@ -1,11 +1,12 @@
 import random
+from recepcao import Recepcao
 from salao import Salao
 from cardapio import Cardapio
 from garcom import Garcom
 from cliente import Cliente
 from pedido import Pedido
 from cozinha import Cozinha
-from utils import validar_string, validar_inteiro
+from utils import validar_inteiro
 
 class Restaurante:
 
@@ -14,11 +15,11 @@ class Restaurante:
     def __init__(self, cardapio: Cardapio) -> None:
         self.cardapio = cardapio
         self.salao = Salao()
+        self.recepcao = Recepcao(self.salao, self.cardapio)
         self.cozinha = Cozinha()
-        self.garcom = Garcom(self.salao, self.cozinha, self.cardapio)
+        self.garcom = Garcom(self.recepcao, self.salao, self.cozinha, self.cardapio)
         self.aberto = False
         self.turno = 1
-        self.fila = []
         self.clientes: list[Cliente] = []
         self.pedidos: list[Pedido] = []
         self.avaliacoes = 0
@@ -44,9 +45,8 @@ class Restaurante:
 
         while self.aberto:
             self.talvez_chegue_cliente()
-            self.acomodar_clientes()
             self.proximo_turno()
-            if self.turno >= 10:
+            if self.turno >= 5:
                 self.encerrar()
 
 
@@ -55,35 +55,17 @@ class Restaurante:
         Caso chegue, o recepciona. Caso contrário, exibe que não chegou."""
         if random.random() < 0.5:
             print("Um cliente chegou!")
-            self.cadastrar_cliente()
+            self.recepcao.cadastrar_cliente()
         else:
             print("Nenhum cliente chegou neste turno.")
-
-
-    def cadastrar_cliente(self) -> Cliente:
-        """Cadastra um cliente e o armazena na lista de clientes, o retornando ao final."""
-        nome = validar_string("> Cadastrar cliente: ")
-        cliente = Cliente(nome)
-        self.clientes.append(cliente)
-        print(f"Cliente {nome} cadastrado com sucesso!")
-        return cliente
-
-
-    def acomodar_clientes(self) -> None:
-        """Percorre a lista de clientes e verifica quais estão aguardando atendimento, 
-        em seguida prossegue com a acomodação dos mesmos."""
-        for cliente in self.clientes:
-            if cliente.aguardando_atendimento():
-                self.garcom.acomodar_cliente(cliente)
 
 
     def proximo_turno(self) -> None:
         """Processa o próximo turno de eventos, atualizando objetos."""
         self.turno += 1
-
         print(f"\n===== TURNO {self.turno} =====")
 
-        for cliente in self.clientes:
+        for cliente in self.recepcao.clientes:
             cliente.atualizar(self.TEMPO_POR_TURNO)
 
         self.garcom.atualizar()

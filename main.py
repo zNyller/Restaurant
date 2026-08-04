@@ -6,6 +6,7 @@ from constants import BOAS_VINDAS
 """ TO-DO NEXT:
 
 - Refinar comunicação entre objetos (eventos, notificações, etc.).
+- Adicionar filas de execução para os objetos (pedidos, estados, etc.)
 
 """
 

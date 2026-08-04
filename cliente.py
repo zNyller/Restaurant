@@ -31,6 +31,9 @@ class Cliente:
         if self.status == Status.SENTOU:
             self.status = Status.QUER_PEDIR
 
+        if self.status == Status.QUER_PEDIR:
+            self.realizar_pedido()
+
         if self.status == Status.REALIZANDO_PEDIDO and self.mesa.registrou_pedido():
             self.status = Status.AGUARDANDO_PEDIDO
 
@@ -89,13 +92,10 @@ class Cliente:
         return self.status == Status.AGUARDANDO_PEDIDO
 
 
-    def receber_cardapio(self, cardapio: Cardapio) -> None:
-        """
-        Recebe o cardápio como parâmetro para acessar os pratos e bebidas
-        e monta um pedido aleatório, que ao final é retornado.
-        """
-        prato = cardapio.prato_aleatorio()
-        bebida = cardapio.bebida_aleatoria()
+    def realizar_pedido(self) -> None:
+        """Monta um pedido aleatório utilizando o cardapio à mesa."""
+        prato = self.mesa.cardapio.prato_aleatorio()
+        bebida = self.mesa.cardapio.bebida_aleatoria()
         self.pedido = Pedido(prato, bebida)
         self.status = Status.REALIZANDO_PEDIDO
 
@@ -106,7 +106,7 @@ class Cliente:
 
     def comunicar_pedido(self) -> Pedido:
         """Vincula o pedido à mesa e o retorna."""
-        #self.mesa.registrar_pedido(self.pedido)
+        self.mesa.registrar_pedido(self.pedido)
         return self.pedido
 
 
