@@ -1,6 +1,12 @@
-from restaurante import Restaurante
-from cardapio import Cardapio
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from restaurante import Restaurante
+    from cardapio import Cardapio
+
 from utils import validar_inteiro
+
 
 def menu_principal(restaurante: Restaurante, cardapio: Cardapio) -> None:
     def _encerrar():

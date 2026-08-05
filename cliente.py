@@ -12,11 +12,11 @@ class Status(Enum):
     SAIU = 'saiu'
 
 class Cliente:
-    def __init__(self, nome) -> None:
+    def __init__(self, nome: str) -> None:
         self.nome = nome
-        self.status = Status.AGUARDANDO_ATENDIMENTO
-        self.mesa = None
-        self.pedido = None
+        self.status: str = Status.AGUARDANDO_ATENDIMENTO
+        self.mesa: Mesa = None
+        self.pedido: Pedido = None
         self.tempo_comendo: int = 30
         self.tempo_pagando: int = 20
         #self.comanda = 0
@@ -69,27 +69,26 @@ class Cliente:
         self.mesa = mesa
 
 
-    def aguardar_pedido(self) -> None:
-        self.status = Status.AGUARDANDO_PEDIDO
-
-
-    def esta_aguardando_pedido(self) -> bool:
-        return self.status == Status.AGUARDANDO_PEDIDO
-
-
     def realizar_pedido(self) -> None:
         """Monta um pedido aleatório utilizando o cardapio à mesa e notifica o garçom."""
         prato = self.mesa.cardapio.prato_aleatorio()
         bebida = self.mesa.cardapio.bebida_aleatoria()
         self.pedido = Pedido(prato, bebida)
-        self.status = Status.REALIZANDO_PEDIDO
-        self.mesa.garcom.notificar_pedido(self)
+        self.mesa.chamar_garcom()
 
 
     def comunicar_pedido(self) -> Pedido:
         """Vincula o pedido à mesa e o retorna."""
         self.mesa.registrar_pedido(self.pedido)
         return self.pedido
+
+
+    def aguardar_pedido(self) -> None:
+        self.status = Status.AGUARDANDO_PEDIDO
+
+
+    def esta_aguardando_pedido(self) -> bool:
+        return self.status == Status.AGUARDANDO_PEDIDO
 
 
     def consumir(self) -> None:

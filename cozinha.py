@@ -1,4 +1,8 @@
-from pedido import Pedido
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pedido import Pedido
 
 class Cozinha:
     def __init__(self):
@@ -17,15 +21,13 @@ class Cozinha:
         """Avança um turno da cozinha."""
 
         # Se não há pedido sendo preparado, pega o próximo da fila.
-        if self.pedido_atual is None:
-            if not self.fila:
-                return
-
+        if self.pedido_atual is None and self.fila:
             self.pedido_atual = self.fila.pop(0)
             self.pedido_atual.preparando()
-            self.tempo_restante += self.pedido_atual.prato.tempo
+            self.tempo_restante = self.pedido_atual.prato.tempo
 
-        self.preparar(minutos)
+        if self.pedido_atual is not None:
+            self.preparar(minutos)
 
 
     def preparar(self, minutos) -> None:

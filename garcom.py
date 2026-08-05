@@ -1,27 +1,17 @@
-from salao import Salao
-from cozinha import Cozinha
-from cardapio import Cardapio
-from cliente import Cliente
-from pedido import Pedido
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from salao import Salao
+    from cozinha import Cozinha
+    from cliente import Cliente
+    from pedido import Pedido
 
 class Garcom:
-    def __init__(
-            self, 
-            salao: Salao, 
-            cozinha: Cozinha, 
-            cardapio: Cardapio
-        ) -> None:
-        self.salao = salao
+    def __init__(self, cozinha: Cozinha) -> None:
         self.cozinha = cozinha
-        self.cardapio = cardapio
-        self.clientes: list[Cliente] = []
         self.fila_pedidos: list[Cliente] = []
-        self.pedidos: list[Pedido] = []
-
-
-    def atualizar(self) -> None:
-        self._coletar_pedidos()
-        self._entregar_pedidos()
+        self.pedidos_em_andamento: list[Pedido] = []
 
 
     def notificar_pedido(self, cliente: Cliente) -> None:
@@ -29,7 +19,7 @@ class Garcom:
         self.fila_pedidos.append(cliente)
 
 
-    def _coletar_pedidos(self) -> None:
+    def coletar_pedidos(self) -> None:
         while self.fila_pedidos:
             cliente = self.fila_pedidos.pop(0)
             pedido = cliente.comunicar_pedido()
@@ -41,7 +31,7 @@ class Garcom:
                 f"\nTempo estimado: {pedido.prato.tempo}min"
             )
 
-            self.pedidos.append(pedido)
+            self.pedidos_em_andamento.append(pedido)
             self._enviar_para_cozinha(pedido)
 
 
@@ -50,7 +40,9 @@ class Garcom:
         print("Enviando o pedido à cozinha...")
 
 
-    def _entregar_pedidos(self) -> None:
-        for pedido in self.pedidos:
+    def entregar_pedidos(self) -> None:
+        # O [:] cria uma cópia para iteração. # Evita que algum pedido seja pulado após remoção ao final.
+        for pedido in self.pedidos_em_andamento[:]: 
             if pedido.esta_pronto():
                 pedido.entregar()
+                self.pedidos_em_andamento.remove(pedido)
