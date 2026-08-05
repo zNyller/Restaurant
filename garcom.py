@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from salao import Salao
     from cozinha import Cozinha
     from cliente import Cliente
     from pedido import Pedido
@@ -12,6 +11,7 @@ class Garcom:
         self.cozinha = cozinha
         self.fila_pedidos: list[Cliente] = []
         self.pedidos_em_andamento: list[Pedido] = []
+        self.eventos: list[tuple[str, str]] = []
 
 
     def notificar_pedido(self, cliente: Cliente) -> None:
@@ -22,22 +22,18 @@ class Garcom:
     def coletar_pedidos(self) -> None:
         while self.fila_pedidos:
             cliente = self.fila_pedidos.pop(0)
-            pedido = cliente.comunicar_pedido()
+            pedido = cliente.confirmar_pedido()
 
-            print(f"Anotando o pedido...")
-            print(
-                f"O cliente pediu {pedido.prato.nome} e {pedido.bebida.nome}, "
-                f"no valor total de R${pedido.valor:.2f} "
-                f"\nTempo estimado: {pedido.prato.tempo}min"
+            self.eventos.append(
+                ("Garçom", 
+                f"📝 Pedido de {cliente.nome}"
+                f"\n  - Prato: {pedido.prato.nome} "
+                f"\n  - Bebida: {pedido.bebida.nome} "
+                f"\n  - Total: R${pedido.valor:.2f}")
             )
 
             self.pedidos_em_andamento.append(pedido)
             self._enviar_para_cozinha(pedido)
-
-
-    def _enviar_para_cozinha(self, pedido: Pedido) -> None:
-        self.cozinha.receber_pedido(pedido)
-        print("Enviando o pedido à cozinha...")
 
 
     def entregar_pedidos(self) -> None:
@@ -45,4 +41,19 @@ class Garcom:
         for pedido in self.pedidos_em_andamento[:]: 
             if pedido.esta_pronto():
                 pedido.entregar()
+                self.eventos.append((
+                    "Garçom",
+                    f"🍽️ Pedido entregue na mesa {pedido.mesa.numero}."
+                ))
                 self.pedidos_em_andamento.remove(pedido)
+
+
+    def coletar_eventos(self) -> list[tuple[str, str]]:
+        eventos = self.eventos
+        self.eventos = []
+        return eventos
+
+
+    def _enviar_para_cozinha(self, pedido: Pedido) -> None:
+        self.cozinha.receber_pedido(pedido)
+        self.eventos.append(("Garçom", "➡️  Pedido enviado à cozinha."))

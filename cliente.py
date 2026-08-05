@@ -14,42 +14,47 @@ class Status(Enum):
 class Cliente:
     def __init__(self, nome: str) -> None:
         self.nome = nome
-        self.status: str = Status.AGUARDANDO_ATENDIMENTO
+        self.status = Status.AGUARDANDO_ATENDIMENTO
         self.mesa: Mesa = None
         self.pedido: Pedido = None
         self.tempo_comendo: int = 30
         self.tempo_pagando: int = 20
+        self.eventos: list[tuple[str, str]] = []
         #self.comanda = 0
 
 
-    def atualizar(self, minutos: int) -> None:
+    def atualizar(self, minutos: int) -> str | None:
         """Avança um turno de clientes."""
 
         if self.status == Status.SENTOU:
             self.realizar_pedido()
 
-        if self.status == Status.COMENDO:
+        elif self.status == Status.AGUARDANDO_PEDIDO:
+            self.eventos.append(("Clientes", f"🕑 {self.nome} aguardando pedido..."))
+
+        elif self.status == Status.COMENDO:
             self.tempo_comendo -= minutos
             if self.tempo_comendo <= 0:
                 self.pagar(self.pedido)
             else:
-                turnos_restantes = self.tempo_comendo / minutos
-                print(
-                    f"{self.nome} está comendo... "
-                    f"({turnos_restantes:.0f} turnos restantes)"
+                self.eventos.append(
+                    ("Clientes", 
+                     f"🍽️ {self.nome} está comendo... ({self.tempo_comendo:.0f}min)")
                 )
                 
-        if self.status == Status.PAGANDO:
+        elif self.status == Status.PAGANDO:
             self.tempo_pagando -= minutos
             if self.tempo_pagando <= 0:
                 self.avaliar()
                 self.mesa.liberar()
             else:
-                turnos_restantes = self.tempo_pagando / minutos
-                print(
-                    f"{self.nome} está pagando... "
-                    f"({turnos_restantes:.0f} turnos restantes)"
+                self.eventos.append(
+                    ("Clientes", 
+                     f"💳 {self.nome} está pagando... ({self.tempo_pagando:.0f}min)")
                 )
+
+        elif self.status == Status.AVALIANDO:
+            self.sair()
 
 
     def aguardando_atendimento(self) -> bool:
@@ -77,7 +82,7 @@ class Cliente:
         self.mesa.chamar_garcom()
 
 
-    def comunicar_pedido(self) -> Pedido:
+    def confirmar_pedido(self) -> Pedido:
         """Vincula o pedido à mesa e o retorna."""
         self.mesa.registrar_pedido(self.pedido)
         return self.pedido
@@ -109,9 +114,19 @@ class Cliente:
 
     def avaliar(self) -> None:
         self.status = Status.AVALIANDO
-        print(f"{self.nome} avaliou o restaurante.")
+        self.eventos.append(("Clientes", f"⭐ {self.nome} avaliou o restaurante."))
 
 
     def sair(self) -> None:
         self.status = Status.SAIU
-        print(f"{self.nome} deixou o restaurante.")
+        self.eventos.append(("Clientes", f"🚪 {self.nome} deixou o restaurante."))
+
+
+    def saiu(self) -> bool:
+        return self.status == Status.SAIU
+
+
+    def coletar_eventos(self) -> list[tuple[str, str]]:
+        eventos = self.eventos
+        self.eventos = []
+        return eventos

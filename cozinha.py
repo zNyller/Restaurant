@@ -9,6 +9,7 @@ class Cozinha:
         self.fila = []
         self.pedido_atual: Pedido = None
         self.tempo_restante: int = 0
+        self.eventos: list[tuple[str, str]] = []
 
 
     def receber_pedido(self, pedido: Pedido):
@@ -32,18 +33,30 @@ class Cozinha:
 
     def preparar(self, minutos) -> None:
         """Processa um turno do preparo do pedido atual."""
-        print(f"Preparando {self.pedido_atual.prato.nome}...")
-
         self.tempo_restante -= minutos
 
-        if self.tempo_restante <= 0:
-            self.disponibilizar_prato()
+        if self.tempo_restante > 0:
+            self.eventos.append(
+                (
+                    "Cozinha", 
+                    f"🫕  Preparando {self.pedido_atual.prato.nome} ({self.tempo_restante}min)"
+                )
+            )
+            return
+
+        self.disponibilizar_prato()
 
 
     def disponibilizar_prato(self) -> None:
         """Finaliza o pedido atual."""
         self.pedido_atual.finalizado()
-        print(f"{self.pedido_atual.prato.nome} ficou pronto!")
+        self.eventos.append(("Cozinha", f"{self.pedido_atual.prato.nome} ficou pronto!"))
 
         self.pedido_atual = None
         self.tempo_restante = 0
+
+
+    def coletar_eventos(self) -> list[tuple[str, str]]:
+        eventos = self.eventos
+        self.eventos = []
+        return eventos

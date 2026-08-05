@@ -18,7 +18,7 @@ def menu_principal(restaurante: Restaurante, cardapio: Cardapio) -> None:
         1: ("Abrir restaurante", restaurante.abrir_restaurante),
         2: ("Conferir cardápio", cardapio.exibir_cardapio),
         3: ("Adicionar um novo prato", cardapio.adicionar_prato),
-        4: ("Verificar status", restaurante.verificar_status),
+        4: ("Exibir status", restaurante.exibir_status),
         5: ("Sair", _encerrar),
     }
 

@@ -16,6 +16,7 @@ class Recepcao:
         self.cardapio = cardapio
         self.garcom = garcom
         self.fila: list[Cliente] = []
+        self.eventos: list[tuple[str, str]] = []
 
 
     def cadastrar_cliente(self) -> Cliente:
@@ -23,7 +24,7 @@ class Recepcao:
         nome = validar_string("> Cadastrar cliente: ")
         cliente = Cliente(nome)
         self.fila.append(cliente)
-        print(f"Cliente {nome} entrou na fila.")
+        self.eventos.append(("Recepção", f"🎟️  {nome} recepcionado."))
 
         self._acomodar_clientes()
 
@@ -34,12 +35,15 @@ class Recepcao:
         self._acomodar_clientes()
 
 
+    def coletar_eventos(self):
+        eventos = self.eventos
+        self.eventos = []
+        return eventos
+
+
     def _acomodar_clientes(self) -> None:
         if self.fila and not self.salao.tem_mesa_disponivel():
-            print(
-                f"Nenhuma mesa disponível no momento. "
-                f"{len(self.fila)} cliente(s) aguardando na fila."
-            )
+            self.eventos.append(("Recepção", f"{len(self.fila)} cliente(s) aguardando na fila."))
             
         while self.fila and self.salao.tem_mesa_disponivel():
             cliente = self.fila.pop(0)
@@ -50,15 +54,10 @@ class Recepcao:
         mesa = self._localizar_mesa()
         mesa.receber(cliente, self.cardapio, self.garcom)
 
-        print(f"{cliente.nome} acomodado à mesa n° {mesa.numero}")
+        self.eventos.append(("Recepção", f"🪑 {cliente.nome} acomodado à mesa n° {mesa.numero}"))
 
 
     def _localizar_mesa(self) -> Mesa:
         for mesa in self.salao.mesas:
             if mesa.esta_livre():
                 return mesa
-
-
-    def _inserir_cliente_na_fila(self, cliente: Cliente) -> None:
-        self.fila.append(cliente)
-        print("Cliente inserido na fila de espera.")

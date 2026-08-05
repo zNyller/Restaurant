@@ -39,7 +39,6 @@ class Pedido:
         """Marca o pedido como entregue e notifica a mesa."""
         self.status = Status.ENTREGUE
         self.mesa.receber_pedido()
-        print(f"Pedido entregue na mesa n° {self.mesa.numero}.")
 
 
     def verificar_status(self):

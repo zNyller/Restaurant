@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock
 from cliente import Cliente, Status
-from pedido import Pedido
 
 def test_realizar_pedido_chama_garcom():
     cliente = Cliente(nome="Ana")
@@ -14,6 +13,6 @@ def test_realizar_pedido_chama_garcom():
 
     cliente.realizar_pedido()
 
-    # Verifica que o cliente de fato notificou a mesa
+    # Verifica se o cliente de fato notificou a mesa
     mesa_falsa.chamar_garcom.assert_called_once()
     assert cliente.pedido is not None
