@@ -1,5 +1,6 @@
 import random
 from terminal import Terminal
+from event_bus import EventBus
 from recepcao import Recepcao
 from salao import Salao
 from cardapio import Cardapio
@@ -15,10 +16,11 @@ class Restaurante:
 
     def __init__(self, cardapio: Cardapio) -> None:
         self.cardapio = cardapio
+        self.event_bus = EventBus()
         self.salao = Salao()
-        self.cozinha = Cozinha()
-        self.garcom = Garcom(self.cozinha)
-        self.recepcao = Recepcao(self.salao, self.cardapio, self.garcom)
+        self.cozinha = Cozinha(self.event_bus)
+        self.garcom = Garcom(self.cozinha, self.event_bus)
+        self.recepcao = Recepcao(self.salao, self.cardapio, self.garcom, self.event_bus)
         self.aberto: bool = False
         self.turno: int = 0
         self.clientes: list[Cliente] = []
@@ -49,9 +51,9 @@ class Restaurante:
 
 
     def _talvez_chegue_cliente(self) -> None:
-        """Define uma chance de 50% de um cliente chegar ao restaurante.
+        """Define uma chance de 70% de um cliente chegar ao restaurante.
         Caso chegue, o recepciona. Caso contrário, informa que não chegou."""
-        if random.random() < 0.5:
+        if random.random() < 0.7:
             print("Um cliente chegou!")
             cliente = self.recepcao.cadastrar_cliente()
             self.clientes.append(cliente)
@@ -79,7 +81,7 @@ class Restaurante:
 
         self._remover_clientes_finalizados()
 
-        self._exibir_eventos()
+        Terminal.exibir(self.event_bus.coletar())
 
 
     def _remover_clientes_finalizados(self):
@@ -90,20 +92,6 @@ class Restaurante:
                 clientes_ativos.append(cliente)
 
         self.clientes = clientes_ativos
-
-
-    def _exibir_eventos(self):
-        eventos = []
-
-        eventos.extend(self.recepcao.coletar_eventos())
-
-        for cliente in self.clientes:
-            eventos.extend(cliente.coletar_eventos())
-
-        eventos.extend(self.garcom.coletar_eventos())
-        eventos.extend(self.cozinha.coletar_eventos())
-
-        Terminal.exibir(eventos)
 
 
     def _encerrar(self) -> None:

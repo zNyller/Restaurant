@@ -1,3 +1,7 @@
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from event_bus import EventBus
+
 from enum import Enum
 from mesa import Mesa
 from pedido import Pedido
@@ -12,14 +16,14 @@ class Status(Enum):
     SAIU = 'saiu'
 
 class Cliente:
-    def __init__(self, nome: str) -> None:
+    def __init__(self, nome: str, event_bus: EventBus) -> None:
         self.nome = nome
+        self.event_bus = event_bus
         self.status = Status.AGUARDANDO_ATENDIMENTO
         self.mesa: Mesa = None
         self.pedido: Pedido = None
         self.tempo_comendo: int = 30
         self.tempo_pagando: int = 20
-        self.eventos: list[tuple[str, str]] = []
         #self.comanda = 0
 
 
@@ -30,16 +34,16 @@ class Cliente:
             self.realizar_pedido()
 
         elif self.status == Status.AGUARDANDO_PEDIDO:
-            self.eventos.append(("Clientes", f"🕑 {self.nome} aguardando pedido..."))
+            self.event_bus.publicar("Clientes", f"🕑 {self.nome} aguardando pedido...")
 
         elif self.status == Status.COMENDO:
             self.tempo_comendo -= minutos
             if self.tempo_comendo <= 0:
                 self.pagar(self.pedido)
             else:
-                self.eventos.append(
-                    ("Clientes", 
-                     f"🍽️ {self.nome} está comendo... ({self.tempo_comendo:.0f}min)")
+                self.event_bus.publicar(
+                    "Clientes", 
+                    f"🍽️  {self.nome} está comendo... ({self.tempo_comendo:.0f}min)"
                 )
                 
         elif self.status == Status.PAGANDO:
@@ -48,9 +52,9 @@ class Cliente:
                 self.avaliar()
                 self.mesa.liberar()
             else:
-                self.eventos.append(
-                    ("Clientes", 
-                     f"💳 {self.nome} está pagando... ({self.tempo_pagando:.0f}min)")
+                self.event_bus.publicar(
+                    "Clientes", 
+                    f"💳  {self.nome} está pagando... ({self.tempo_pagando:.0f}min)"
                 )
 
         elif self.status == Status.AVALIANDO:
@@ -114,19 +118,13 @@ class Cliente:
 
     def avaliar(self) -> None:
         self.status = Status.AVALIANDO
-        self.eventos.append(("Clientes", f"⭐ {self.nome} avaliou o restaurante."))
+        self.event_bus.publicar("Clientes", f"⭐ {self.nome} avaliou o restaurante.")
 
 
     def sair(self) -> None:
         self.status = Status.SAIU
-        self.eventos.append(("Clientes", f"🚪 {self.nome} deixou o restaurante."))
+        self.event_bus.publicar("Clientes", f"🚪 {self.nome} deixou o restaurante.")
 
 
     def saiu(self) -> bool:
         return self.status == Status.SAIU
-
-
-    def coletar_eventos(self) -> list[tuple[str, str]]:
-        eventos = self.eventos
-        self.eventos = []
-        return eventos

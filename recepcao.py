@@ -1,33 +1,42 @@
 from __future__ import annotations
+from collections import deque
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from salao import Salao
     from cardapio import Cardapio
     from garcom import Garcom
+    from event_bus import EventBus
     from mesa import Mesa
 
 from cliente import Cliente
 from utils import validar_string
 
 class Recepcao:
-    def __init__(self, salao: Salao, cardapio: Cardapio, garcom: Garcom):
+    def __init__(
+            self, 
+            salao: Salao, 
+            cardapio: Cardapio, 
+            garcom: Garcom, 
+            event_bus: EventBus
+        ) -> None:
         self.salao = salao
         self.cardapio = cardapio
         self.garcom = garcom
-        self.fila: list[Cliente] = []
-        self.eventos: list[tuple[str, str]] = []
+        self.event_bus = event_bus
+        self.fila: deque[Cliente] = deque()
 
 
     def cadastrar_cliente(self) -> Cliente:
         """Cadastra um cliente e o armazena na lista de clientes, acomodando-o ao final."""
         nome = validar_string("> Cadastrar cliente: ")
-        cliente = Cliente(nome)
+        cliente = Cliente(nome, self.event_bus)
         self.fila.append(cliente)
-        self.eventos.append(("Recepção", f"🎟️  {nome} recepcionado."))
+        self.event_bus.publicar(
+            "Recepção", f"🎟️  {nome} recepcionado."
+        )
 
         self._acomodar_clientes()
-
         return cliente
 
 
@@ -35,18 +44,14 @@ class Recepcao:
         self._acomodar_clientes()
 
 
-    def coletar_eventos(self):
-        eventos = self.eventos
-        self.eventos = []
-        return eventos
-
-
     def _acomodar_clientes(self) -> None:
         if self.fila and not self.salao.tem_mesa_disponivel():
-            self.eventos.append(("Recepção", f"{len(self.fila)} cliente(s) aguardando na fila."))
+            self.event_bus.publicar(
+                "Recepção", f"{len(self.fila)} cliente(s) aguardando na fila."
+            )
             
         while self.fila and self.salao.tem_mesa_disponivel():
-            cliente = self.fila.pop(0)
+            cliente = self.fila.popleft()
             self._acomodar_cliente(cliente)
 
 
@@ -54,7 +59,9 @@ class Recepcao:
         mesa = self._localizar_mesa()
         mesa.receber(cliente, self.cardapio, self.garcom)
 
-        self.eventos.append(("Recepção", f"🪑 {cliente.nome} acomodado à mesa n° {mesa.numero}"))
+        self.event_bus.publicar(
+            "Recepção", f"🪑 {cliente.nome} acomodado à mesa n° {mesa.numero}"
+        )
 
 
     def _localizar_mesa(self) -> Mesa:

@@ -6,12 +6,12 @@ class Terminal:
     def exibir(eventos: list[tuple[str, str]]) -> None:
         grupos = defaultdict(list)
 
+        ultima_categoria = None
+
         for categoria, mensagem in eventos:
-            grupos[categoria].append(mensagem)
+            if categoria != ultima_categoria:
+                print(f"\n[{categoria}]")
+                print("-" * (len(categoria) + 2))
+                ultima_categoria = categoria
 
-        for categoria, mensagens in grupos.items():
-            print(f"\n[{categoria}]")
-            print("-" * (len(categoria) + 2))
-
-            for mensagem in mensagens:
-                print(mensagem)
+            print(mensagem)

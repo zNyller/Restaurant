@@ -1,17 +1,19 @@
 from __future__ import annotations
+from collections import deque
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from cozinha import Cozinha
+    from event_bus import EventBus
     from cliente import Cliente
     from pedido import Pedido
 
 class Garcom:
-    def __init__(self, cozinha: Cozinha) -> None:
+    def __init__(self, cozinha: Cozinha, event_bus: EventBus) -> None:
         self.cozinha = cozinha
-        self.fila_pedidos: list[Cliente] = []
+        self.event_bus = event_bus
+        self.fila_pedidos: deque[Cliente] = deque()
         self.pedidos_em_andamento: list[Pedido] = []
-        self.eventos: list[tuple[str, str]] = []
 
 
     def notificar_pedido(self, cliente: Cliente) -> None:
@@ -21,15 +23,15 @@ class Garcom:
 
     def coletar_pedidos(self) -> None:
         while self.fila_pedidos:
-            cliente = self.fila_pedidos.pop(0)
+            cliente = self.fila_pedidos.popleft()
             pedido = cliente.confirmar_pedido()
 
-            self.eventos.append(
-                ("Garçom", 
+            self.event_bus.publicar(
+                "Garçom", 
                 f"📝 Pedido de {cliente.nome}"
                 f"\n  - Prato: {pedido.prato.nome} "
                 f"\n  - Bebida: {pedido.bebida.nome} "
-                f"\n  - Total: R${pedido.valor:.2f}")
+                f"\n  - Total: R${pedido.valor:.2f}"
             )
 
             self.pedidos_em_andamento.append(pedido)
@@ -37,23 +39,22 @@ class Garcom:
 
 
     def entregar_pedidos(self) -> None:
-        # O [:] cria uma cópia para iteração. # Evita que algum pedido seja pulado após remoção ao final.
-        for pedido in self.pedidos_em_andamento[:]: 
+        """Verifica os pedidos em andamento e entrega o que estiver pronto."""
+        restantes = []
+
+        for pedido in self.pedidos_em_andamento: 
             if pedido.esta_pronto():
                 pedido.entregar()
-                self.eventos.append((
+                self.event_bus.publicar(
                     "Garçom",
-                    f"🍽️ Pedido entregue na mesa {pedido.mesa.numero}."
-                ))
-                self.pedidos_em_andamento.remove(pedido)
+                    f"🍽️  Pedido entregue na mesa {pedido.mesa.numero}."
+                )
+            else:
+                restantes.append(pedido)
 
-
-    def coletar_eventos(self) -> list[tuple[str, str]]:
-        eventos = self.eventos
-        self.eventos = []
-        return eventos
+        self.pedidos_em_andamento = restantes
 
 
     def _enviar_para_cozinha(self, pedido: Pedido) -> None:
         self.cozinha.receber_pedido(pedido)
-        self.eventos.append(("Garçom", "➡️  Pedido enviado à cozinha."))
+        self.event_bus.publicar("Garçom", "➡️  Pedido enviado à cozinha.")
