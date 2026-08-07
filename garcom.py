@@ -47,7 +47,7 @@ class Garcom:
                 pedido.entregar()
                 self.event_bus.publicar(
                     "Garçom",
-                    f"🍽️  Pedido entregue na mesa {pedido.mesa.numero}."
+                    f"🍽️  Entregou o pedido da mesa n° {pedido.mesa.numero}."
                 )
             else:
                 restantes.append(pedido)

@@ -24,6 +24,7 @@ class Recepcao:
         self.cardapio = cardapio
         self.garcom = garcom
         self.event_bus = event_bus
+        self.clientes_registrados: list[Cliente] = []
         self.fila: deque[Cliente] = deque()
 
 
@@ -31,6 +32,7 @@ class Recepcao:
         """Cadastra um cliente e o armazena na lista de clientes, acomodando-o ao final."""
         nome = validar_string("> Cadastrar cliente: ")
         cliente = Cliente(nome, self.event_bus)
+        self.clientes_registrados.append(cliente)
         self.fila.append(cliente)
         self.event_bus.publicar(
             "Recepção", f"🎟️  {nome} recepcionado."
@@ -66,5 +68,5 @@ class Recepcao:
 
     def _localizar_mesa(self) -> Mesa:
         for mesa in self.salao.mesas:
-            if mesa.esta_livre():
+            if mesa.esta_livre:
                 return mesa

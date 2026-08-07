@@ -24,7 +24,6 @@ class Restaurante:
         self.aberto: bool = False
         self.turno: int = 0
         self.clientes: list[Cliente] = []
-        self.pedidos: list[Pedido] = []
         self.avaliacoes: int = 0
 
 
@@ -34,8 +33,7 @@ class Restaurante:
             f"Status atual do restaurante:"
             f"\nAvaliações: {self.avaliacoes}"
             f"\nNúmero de mesas: {len(self.salao.mesas)}"
-            f"\nNúmero de clientes: {len(self.clientes)}"
-            f"\nNúmero de pedidos feitos: {len(self.pedidos)}"
+            f"\nNúmero de clientes registrados: {len(self.recepcao.clientes_registrados)}"
         )
 
 
@@ -43,17 +41,25 @@ class Restaurante:
         """Abre o restaurante e inicia o fluxo de atendimento."""
         print("Abrindo restaurante...")
         self.aberto = True
+        self.atendendo = True
 
         while self.aberto:
             self._proximo_turno()
-            if self.turno >= 7:
-                self._encerrar()
+
+            if self.turno >= 10 and self.atendendo:
+                self._encerrar_atendimento()
+
+            elif not self.atendendo and self.clientes:
+                self._avancar_exibicao()
+
+            if not self.atendendo and not self.clientes:
+                self.aberto = False
 
 
     def _talvez_chegue_cliente(self) -> None:
-        """Define uma chance de 70% de um cliente chegar ao restaurante.
+        """Define uma chance de 60% de um cliente chegar ao restaurante.
         Caso chegue, o recepciona. Caso contrário, informa que não chegou."""
-        if random.random() < 0.7:
+        if random.random() < 0.6:
             print("Um cliente chegou!")
             cliente = self.recepcao.cadastrar_cliente()
             self.clientes.append(cliente)
@@ -66,10 +72,14 @@ class Restaurante:
         self.turno += 1
         print(f"\n===== TURNO {self.turno} =====")
 
-        self._talvez_chegue_cliente()
+        if self.atendendo:
+            self._talvez_chegue_cliente()
 
         for cliente in self.clientes:
             cliente.atualizar(self.TEMPO_POR_TURNO)
+
+            if cliente.avaliou:
+                self.avaliacoes += 1
 
         self.garcom.coletar_pedidos()
 
@@ -88,15 +98,19 @@ class Restaurante:
         clientes_ativos = []
 
         for cliente in self.clientes:
-            if not cliente.saiu():
+            if not cliente.saiu:
                 clientes_ativos.append(cliente)
 
         self.clientes = clientes_ativos
 
 
-    def _encerrar(self) -> None:
-        print("1. Aguardar próximo cliente \n2. Encerrar atendimentos")
+    def _encerrar_atendimento(self) -> None:
+        print("\n1. Aguardar próximo cliente \n2. Encerrar os atendimentos")
         decisao = validar_inteiro("Qual a decisão? ")
 
         if decisao == 2:
-            self.aberto = False
+            self.atendendo = False
+
+
+    def _avancar_exibicao(self) -> None:
+        input("Pressione ENTER para avançar: ")

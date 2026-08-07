@@ -8,7 +8,7 @@ from cardapio import Cardapio
 
 def test_mesa_comeca_livre():
     mesa = Mesa(numero=1)
-    assert mesa.esta_livre() is True
+    assert mesa.esta_livre
 
 
 def test_liberar_mesa_reseta_estado():
@@ -19,7 +19,7 @@ def test_liberar_mesa_reseta_estado():
 
     mesa.liberar()
 
-    assert mesa.esta_livre() is True
+    assert mesa.esta_livre
     assert mesa.cliente is None
     assert mesa.pedido is None
 
@@ -31,9 +31,9 @@ def test_receber_cliente_ocupa_mesa():
 
     mesa.receber(cliente, cardapio, garcom=None)
 
-    assert mesa.esta_livre() is False
+    assert not mesa.esta_livre
     assert mesa.cliente is cliente
-    assert cliente.esta_sentado() is True
+    assert cliente.esta_sentado
 
 """
 Fixtures: parando de repetir Arrange

@@ -14,7 +14,7 @@ class Salao:
 
     def tem_mesa_disponivel(self) -> bool:
         for mesa in self.mesas:
-            if mesa.esta_livre():
+            if mesa.esta_livre:
                 return True
             
         return False

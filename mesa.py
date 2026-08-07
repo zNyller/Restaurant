@@ -17,6 +17,7 @@ class Mesa:
         self.pedido: Pedido = None
 
 
+    @property
     def esta_livre(self) -> bool:
         return not self.ocupada
 

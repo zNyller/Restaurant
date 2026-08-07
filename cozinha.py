@@ -35,13 +35,14 @@ class Cozinha:
 
     def preparar(self, minutos) -> None:
         """Processa um turno do preparo do pedido atual."""
-        self.tempo_restante -= minutos
-
+        
         if self.tempo_restante > 0:
             self.event_bus.publicar(
                 "Cozinha", 
                 f"🫕  Preparando {self.pedido_atual.prato.nome} ({self.tempo_restante}min)"
             )
+            
+            self.tempo_restante -= minutos
             return
 
         self.disponibilizar_prato()
@@ -50,7 +51,9 @@ class Cozinha:
     def disponibilizar_prato(self) -> None:
         """Finaliza o pedido atual."""
         self.pedido_atual.finalizado()
-        self.event_bus.publicar("Cozinha", f"{self.pedido_atual.prato.nome} ficou pronto!")
+        self.event_bus.publicar(
+            "Cozinha", f"🍝  {self.pedido_atual.prato.nome} ficou pronto!"
+        )
 
         self.pedido_atual = None
         self.tempo_restante = 0
