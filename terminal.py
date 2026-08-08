@@ -1,11 +1,7 @@
-from collections import defaultdict
-
 class Terminal:
 
     @staticmethod
     def exibir(eventos: list[tuple[str, str]]) -> None:
-        grupos = defaultdict(list)
-
         ultima_categoria = None
 
         for categoria, mensagem in eventos:

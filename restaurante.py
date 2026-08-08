@@ -6,7 +6,6 @@ from salao import Salao
 from cardapio import Cardapio
 from garcom import Garcom
 from cliente import Cliente
-from pedido import Pedido
 from cozinha import Cozinha
 from utils import validar_inteiro
 
@@ -47,31 +46,26 @@ class Restaurante:
             self._proximo_turno()
 
             if self.turno >= 10 and self.atendendo:
-                self._encerrar_atendimento()
+                self._encerrar_ou_seguir_atendimento()
 
             elif not self.atendendo and self.clientes:
                 self._avancar_exibicao()
 
-            if not self.atendendo and not self.clientes:
+            elif not self.atendendo and not self.clientes:
                 self.aberto = False
 
 
-    def _talvez_chegue_cliente(self) -> None:
-        """Define uma chance de 60% de um cliente chegar ao restaurante.
-        Caso chegue, o recepciona. Caso contrário, informa que não chegou."""
-        if random.random() < 0.6:
-            print("Um cliente chegou!")
-            cliente = self.recepcao.cadastrar_cliente()
-            self.clientes.append(cliente)
-        else:
-            print("Nenhum cliente chegou neste turno.")
-
-
     def _proximo_turno(self) -> None:
-        """Processa o próximo turno de eventos, atualizando objetos."""
+        """Inicia o próximo turno de eventos, atualizando objetos."""
         self.turno += 1
         print(f"\n===== TURNO {self.turno} =====")
 
+        self._processar_eventos()
+
+        Terminal.exibir(self.event_bus.coletar())
+
+
+    def _processar_eventos(self) -> None:
         if self.atendendo:
             self._talvez_chegue_cliente()
 
@@ -91,10 +85,18 @@ class Restaurante:
 
         self._remover_clientes_finalizados()
 
-        Terminal.exibir(self.event_bus.coletar())
+
+    def _talvez_chegue_cliente(self) -> None:
+        # Chance de 60% de um cliente chegar ao restaurante.
+        if random.random() < 0.6:
+            print("Um cliente chegou!")
+            cliente = self.recepcao.cadastrar_cliente()
+            self.clientes.append(cliente)
+        else:
+            print("Nenhum cliente chegou neste turno.")
 
 
-    def _remover_clientes_finalizados(self):
+    def _remover_clientes_finalizados(self) -> None:
         clientes_ativos = []
 
         for cliente in self.clientes:
@@ -104,7 +106,7 @@ class Restaurante:
         self.clientes = clientes_ativos
 
 
-    def _encerrar_atendimento(self) -> None:
+    def _encerrar_ou_seguir_atendimento(self) -> None:
         print("\n1. Aguardar próximo cliente \n2. Encerrar os atendimentos")
         decisao = validar_inteiro("Qual a decisão? ")
 

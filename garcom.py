@@ -26,7 +26,7 @@ class Garcom:
             cliente = self.fila_pedidos.popleft()
             pedido = cliente.confirmar_pedido()
 
-            self.event_bus.publicar(
+            self.event_bus.registrar(
                 "Garçom", 
                 f"📝 Pedido de {cliente.nome}"
                 f"\n  - Prato: {pedido.prato.nome} "
@@ -43,9 +43,9 @@ class Garcom:
         restantes = []
 
         for pedido in self.pedidos_em_andamento: 
-            if pedido.esta_pronto():
+            if pedido.esta_pronto:
                 pedido.entregar()
-                self.event_bus.publicar(
+                self.event_bus.registrar(
                     "Garçom",
                     f"🍽️  Entregou o pedido da mesa n° {pedido.mesa.numero}."
                 )
@@ -57,4 +57,4 @@ class Garcom:
 
     def _enviar_para_cozinha(self, pedido: Pedido) -> None:
         self.cozinha.receber_pedido(pedido)
-        self.event_bus.publicar("Garçom", "➡️  Pedido enviado à cozinha.")
+        self.event_bus.registrar("Garçom", "➡️  Pedido enviado à cozinha.")

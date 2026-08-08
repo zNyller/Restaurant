@@ -27,28 +27,31 @@ class Recepcao:
         self.clientes_registrados: list[Cliente] = []
         self.fila: deque[Cliente] = deque()
 
-
     def cadastrar_cliente(self) -> Cliente:
-        """Cadastra um cliente e o armazena na lista de clientes, acomodando-o ao final."""
+        """Cadastra um cliente e o recepciona, retornando-o ao final."""
         nome = validar_string("> Cadastrar cliente: ")
         cliente = Cliente(nome, self.event_bus)
         self.clientes_registrados.append(cliente)
-        self.fila.append(cliente)
-        self.event_bus.publicar(
-            "Recepção", f"🎟️  {nome} recepcionado."
-        )
 
-        self._acomodar_clientes()
+        self._recepcionar_cliente(cliente)
+
         return cliente
 
-
     def atualizar(self) -> None:
-        self._acomodar_clientes()
+        self._gerenciar_fila()
 
+    def _recepcionar_cliente(self, cliente: Cliente) -> None:
+        self.fila.append(cliente)
 
-    def _acomodar_clientes(self) -> None:
+        self.event_bus.registrar(
+            "Recepção", f"🎟️  {cliente.nome} recepcionado."
+        )
+
+        self._gerenciar_fila()
+
+    def _gerenciar_fila(self) -> None:
         if self.fila and not self.salao.tem_mesa_disponivel():
-            self.event_bus.publicar(
+            self.event_bus.registrar(
                 "Recepção", f"{len(self.fila)} cliente(s) aguardando na fila."
             )
             
@@ -56,15 +59,13 @@ class Recepcao:
             cliente = self.fila.popleft()
             self._acomodar_cliente(cliente)
 
-
     def _acomodar_cliente(self, cliente: Cliente) -> None:
         mesa = self._localizar_mesa()
         mesa.receber(cliente, self.cardapio, self.garcom)
 
-        self.event_bus.publicar(
+        self.event_bus.registrar(
             "Recepção", f"🪑 {cliente.nome} acomodado à mesa n° {mesa.numero}"
         )
-
 
     def _localizar_mesa(self) -> Mesa:
         for mesa in self.salao.mesas:

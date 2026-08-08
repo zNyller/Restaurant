@@ -11,39 +11,43 @@ class Status(Enum):
     ENTREGUE = 'entregue'
 
 class Pedido:
-    def __init__(self, prato: Prato, bebida: Bebida):
+    def __init__(self, prato: Prato, bebida: Bebida) -> None:
         self.prato = prato
         self.bebida = bebida
         self.valor = prato.preco + bebida.preco
         self.mesa = None
-        self.status = Status.CRIADO
+        self._status = Status.CRIADO
 
 
-    def na_fila(self):
-        self.status = Status.NA_FILA
+    # Propriedas públicas
+    @property
+    def status(self) -> Status:
+        return self._status
 
 
-    def preparando(self):
-        self.status = Status.PREPARANDO
+    @property
+    def esta_pronto(self) -> bool:
+        return self.status == Status.FINALIZADO
 
 
-    def finalizado(self):
-        self.status = Status.FINALIZADO
+    # Comportamentos públicos
+    def inserir_na_fila(self) -> None:
+        self._status = Status.NA_FILA
 
 
-    def vincular(self, mesa: Mesa):
+    def iniciar_preparo(self) -> None:
+        self._status = Status.PREPARANDO
+
+
+    def finalizar(self) -> None:
+        self._status = Status.FINALIZADO
+
+
+    def vincular(self, mesa: Mesa) -> None:
         self.mesa = mesa
 
 
-    def entregar(self):
+    def entregar(self) -> None:
         """Marca o pedido como entregue e notifica a mesa."""
-        self.status = Status.ENTREGUE
+        self._status = Status.ENTREGUE
         self.mesa.receber_pedido()
-
-
-    def verificar_status(self):
-        print(f"Status do pedido: {self.status}")
-
-
-    def esta_pronto(self):
-        return self.status == Status.FINALIZADO

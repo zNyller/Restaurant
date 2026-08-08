@@ -23,6 +23,7 @@ class Cardapio:
         print('\nCardápio de hoje:')
         for codigo, prato in self.pratos.items():
             print(f"\nPrato n° {codigo}: {prato.descricao()}")
+            
         print('\nBebidas:')
         for codigo, bebida in self.bebidas.items():
             print(f"{codigo}. {bebida.descricao()}")
