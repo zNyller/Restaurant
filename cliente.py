@@ -12,7 +12,9 @@ class Status(Enum):
     SENTOU = 'sentou'
     AGUARDANDO_PEDIDO = 'aguardando pedido'
     COMENDO = 'comendo'
+    PEDINDO_A_CONTA = 'pedindo a conta'
     PAGANDO = 'pagando'
+    PAGOU = 'pagou'
     AVALIANDO = 'avaliando'
     SAIU = 'saiu'
 
@@ -34,6 +36,10 @@ class Cliente:
         return self._status
 
     @property
+    def pedido(self) -> Pedido:
+        return self._pedido
+
+    @property
     def esta_aguardando_atendimento(self) -> bool:
         return self._status == Status.AGUARDANDO_ATENDIMENTO
 
@@ -50,8 +56,16 @@ class Cliente:
         return self._status == Status.COMENDO
 
     @property
+    def esta_pedindo_a_conta(self) -> bool:
+        return self._status == Status.PEDINDO_A_CONTA
+
+    @property
     def esta_pagando(self) -> bool:
         return self._status == Status.PAGANDO
+
+    @property
+    def pagou(self) -> bool:
+        return self._status == Status.PAGOU
 
     @property
     def esta_avaliando(self) -> bool:
@@ -78,7 +92,8 @@ class Cliente:
         elif self.esta_consumindo:
             self._tempo_comendo -= minutos
             if self._tempo_comendo <= 0:
-                self._pagar(self._pedido)
+                self._pedir_a_conta()
+                self._mesa.liberar()
             else:
                 self.event_bus.registrar(
                     "Clientes", 
@@ -88,8 +103,10 @@ class Cliente:
         elif self.esta_pagando:
             self._tempo_pagando -= minutos
             if self._tempo_pagando <= 0:
-                self._avaliar()
-                self._mesa.liberar()
+                self._status = Status.PAGOU
+
+        elif self._status == Status.PAGOU:
+            self._avaliar()
 
         elif self.esta_avaliando:
             self._avaliou_restaurante = True
@@ -113,6 +130,12 @@ class Cliente:
     def consumir(self) -> None:
         self._status = Status.COMENDO
 
+    def pagar(self, valor: float) -> None:
+        self._status = Status.PAGANDO
+        self.event_bus.registrar(
+            "Clientes", f"💳  {self.nome} está pagando... (R${valor:.2f})"
+        )
+
     # Métodos privados
     def _realizar_pedido(self) -> None:
         """Monta um pedido aleatório utilizando o cardapio à mesa e notifica o garçom."""
@@ -121,11 +144,9 @@ class Cliente:
         self._pedido = Pedido(prato, bebida)
         self._mesa.chamar_garcom()
 
-    def _pagar(self, pedido: Pedido) -> None:
-        self._status = Status.PAGANDO
-        self.event_bus.registrar(
-            "Clientes", f"💳  {self.nome} está pagando... (R${pedido.valor:.2f})"
-        )
+    def _pedir_a_conta(self) -> None:
+        self.event_bus.registrar("Clientes", f"🧾 {self.nome} pediu a conta.")
+        self._status = Status.PEDINDO_A_CONTA
 
     def _avaliar(self) -> None:
         self._status = Status.AVALIANDO

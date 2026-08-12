@@ -72,7 +72,13 @@ class Restaurante:
         for cliente in self.clientes:
             cliente.atualizar(self.TEMPO_POR_TURNO)
 
-            if cliente.avaliou:
+            if cliente.esta_pedindo_a_conta:
+                self.recepcao.fechar_a_conta(cliente)
+
+            elif cliente.pagou:
+                self.recepcao.receber_pagamento(cliente)
+
+            elif cliente.avaliou:
                 self.avaliacoes += 1
 
         self.garcom.coletar_pedidos()

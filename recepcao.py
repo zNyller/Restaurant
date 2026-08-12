@@ -40,6 +40,20 @@ class Recepcao:
     def atualizar(self) -> None:
         self._gerenciar_fila()
 
+    def fechar_a_conta(self, cliente: Cliente) -> None:
+        valor_total = cliente.pedido.valor
+        self.event_bus.registrar(
+            "Recepção", 
+            f"Fechando a conta de {cliente.nome}... Valor total: R${valor_total:.2f}"
+        )
+        cliente.pagar(valor_total)
+
+    def receber_pagamento(self, cliente: Cliente) -> None:
+        self.event_bus.registrar(
+            "Recepção", 
+            f"💳  {cliente.nome} efetuou o pagamento | Valor: R${cliente.pedido.valor:.2f}"
+        )
+
     def _recepcionar_cliente(self, cliente: Cliente) -> None:
         self.fila.append(cliente)
 
