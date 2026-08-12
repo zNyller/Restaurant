@@ -6,7 +6,8 @@ from constants import BOAS_VINDAS
 """
 TO-DO NEXT: 
 
-- Aprimorar o sistema financeiro e refinar pagamento dos clientes na recepção.
+- Refinar comanda.
+- Testar fluxo.
 """
 
 def main() -> None:

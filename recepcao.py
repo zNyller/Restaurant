@@ -3,37 +3,45 @@ from collections import deque
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from financeiro import Financeiro
     from salao import Salao
     from cardapio import Cardapio
     from garcom import Garcom
     from event_bus import EventBus
     from mesa import Mesa
 
+from comanda import Comanda
 from cliente import Cliente
 from utils import validar_string
 
 class Recepcao:
     def __init__(
-            self, 
+            self,
+            financeiro: Financeiro, 
             salao: Salao, 
             cardapio: Cardapio, 
             garcom: Garcom, 
             event_bus: EventBus
         ) -> None:
+        self.financeiro = financeiro
         self.salao = salao
         self.cardapio = cardapio
         self.garcom = garcom
         self.event_bus = event_bus
+        self.comandas: int = 1
         self.clientes_registrados: list[Cliente] = []
         self.fila: deque[Cliente] = deque()
 
     def cadastrar_cliente(self) -> Cliente:
-        """Cadastra um cliente e o recepciona, retornando-o ao final."""
+        """Cadastra um cliente com sua comanda e o recepciona, retornando-o ao final."""
         nome = validar_string("> Cadastrar cliente: ")
-        cliente = Cliente(nome, self.event_bus)
+        comanda = Comanda(self.comandas)
+        cliente = Cliente(nome, comanda, self.event_bus)
         self.clientes_registrados.append(cliente)
 
         self._recepcionar_cliente(cliente)
+
+        self.comandas += 1
 
         return cliente
 
@@ -41,7 +49,7 @@ class Recepcao:
         self._gerenciar_fila()
 
     def fechar_a_conta(self, cliente: Cliente) -> None:
-        valor_total = cliente.pedido.valor
+        valor_total = cliente.comanda.valor
         self.event_bus.registrar(
             "Recepção", 
             f"Fechando a conta de {cliente.nome}... Valor total: R${valor_total:.2f}"
@@ -49,9 +57,11 @@ class Recepcao:
         cliente.pagar(valor_total)
 
     def receber_pagamento(self, cliente: Cliente) -> None:
+        valor = cliente.comanda.valor
+        self.financeiro.registrar_valor(valor)
         self.event_bus.registrar(
             "Recepção", 
-            f"💳  {cliente.nome} efetuou o pagamento | Valor: R${cliente.pedido.valor:.2f}"
+            f"💳  {cliente.nome} efetuou o pagamento | Valor: R${valor:.2f}"
         )
 
     def _recepcionar_cliente(self, cliente: Cliente) -> None:

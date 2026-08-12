@@ -18,7 +18,6 @@ class Cardapio:
             4: Bebida('Taça de vinho', preco=15)
         }
 
-
     def exibir_cardapio(self) -> None:
         print('\nCardápio de hoje:')
         for codigo, prato in self.pratos.items():
@@ -28,20 +27,16 @@ class Cardapio:
         for codigo, bebida in self.bebidas.items():
             print(f"{codigo}. {bebida.descricao()}")
 
-
     def obter_prato(self, codigo: int) -> Prato:
         return self.pratos.get(codigo)
-
 
     def prato_aleatorio(self) -> Prato:
         codigo = choice(list(self.pratos.keys()))
         return self.pratos[codigo]
 
-
     def bebida_aleatoria(self):
         codigo = choice(list(self.bebidas.keys()))
         return self.bebidas[codigo]
-
 
     def adicionar_prato(self) -> None:
         nome = validar_string("Nome do prato: ")

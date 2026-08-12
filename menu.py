@@ -13,7 +13,6 @@ def menu_principal(restaurante: Restaurante, cardapio: Cardapio) -> None:
         print("Até a próxima!")
         return False
 
-
     opcoes = {
         1: ("Abrir restaurante", restaurante.abrir_restaurante),
         2: ("Conferir cardápio", cardapio.exibir_cardapio),
@@ -22,11 +21,10 @@ def menu_principal(restaurante: Restaurante, cardapio: Cardapio) -> None:
         5: ("Sair", _encerrar),
     }
 
-
     def _exibir_opcoes():
+        print()
         for chave, (descricao, _) in opcoes.items():
             print(f"[{chave}] - {descricao}")
-
 
     def _validar_escolha():
         opcao_escolhida = validar_inteiro("Selecione uma das opções: ")
@@ -41,7 +39,6 @@ def menu_principal(restaurante: Restaurante, cardapio: Cardapio) -> None:
         
         print("Opção inválida!")
         return True
-
 
     _exibir_opcoes()
     return _validar_escolha()

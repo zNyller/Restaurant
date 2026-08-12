@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from comanda import Comanda
     from event_bus import EventBus
     from mesa import Mesa
 
@@ -19,16 +20,15 @@ class Status(Enum):
     SAIU = 'saiu'
 
 class Cliente:
-    def __init__(self, nome: str, event_bus: EventBus) -> None:
+    def __init__(self, nome: str, comanda: Comanda, event_bus: EventBus) -> None:
         self.nome = nome
-        self.event_bus = event_bus
+        self._comanda = comanda
+        self._event_bus = event_bus
         self._status = Status.AGUARDANDO_ATENDIMENTO
         self._mesa: Mesa = None
-        self._pedido: Pedido = None
         self._tempo_comendo: int = 30
         self._tempo_pagando: int = 10
         self._avaliou_restaurante: bool = False
-        #self.comanda = 0
 
     # Propriedades públicas
     @property
@@ -36,8 +36,8 @@ class Cliente:
         return self._status
 
     @property
-    def pedido(self) -> Pedido:
-        return self._pedido
+    def comanda(self) -> Comanda:
+        return self._comanda
 
     @property
     def esta_aguardando_atendimento(self) -> bool:
@@ -80,14 +80,14 @@ class Cliente:
         return self._status == Status.SAIU
 
     # Métodos públicos
-    def atualizar(self, minutos: int) -> str | None:
+    def atualizar(self, minutos: int) -> None:
         """Avança um turno de clientes."""
 
         if self.esta_sentado:
             self._realizar_pedido()
 
         elif self.esta_aguardando_pedido:
-            self.event_bus.registrar("Clientes", f"🕑 {self.nome} aguardando pedido...")
+            self._event_bus.registrar("Clientes", f"🕑 {self.nome} aguardando pedido...")
 
         elif self.esta_consumindo:
             self._tempo_comendo -= minutos
@@ -95,7 +95,7 @@ class Cliente:
                 self._pedir_a_conta()
                 self._mesa.liberar()
             else:
-                self.event_bus.registrar(
+                self._event_bus.registrar(
                     "Clientes", 
                     f"🍽️  {self.nome} está comendo... ({self._tempo_comendo:.0f}min)"
                 )
@@ -121,8 +121,8 @@ class Cliente:
 
     def confirmar_pedido(self) -> Pedido:
         """Vincula o pedido à mesa e o retorna."""
-        self._mesa.registrar_pedido(self._pedido)
-        return self._pedido
+        self._mesa.registrar_pedido(self._comanda.pedido)
+        return self._comanda.pedido
 
     def aguardar_pedido(self) -> None:
         self._status = Status.AGUARDANDO_PEDIDO
@@ -132,7 +132,7 @@ class Cliente:
 
     def pagar(self, valor: float) -> None:
         self._status = Status.PAGANDO
-        self.event_bus.registrar(
+        self._event_bus.registrar(
             "Clientes", f"💳  {self.nome} está pagando... (R${valor:.2f})"
         )
 
@@ -141,17 +141,19 @@ class Cliente:
         """Monta um pedido aleatório utilizando o cardapio à mesa e notifica o garçom."""
         prato = self._mesa.cardapio.prato_aleatorio()
         bebida = self._mesa.cardapio.bebida_aleatoria()
-        self._pedido = Pedido(prato, bebida)
+        pedido = Pedido(prato, bebida)
+
+        self._comanda.registrar(pedido)
         self._mesa.chamar_garcom()
 
     def _pedir_a_conta(self) -> None:
-        self.event_bus.registrar("Clientes", f"🧾 {self.nome} pediu a conta.")
+        self._event_bus.registrar("Clientes", f"🧾 {self.nome} pediu a conta.")
         self._status = Status.PEDINDO_A_CONTA
 
     def _avaliar(self) -> None:
         self._status = Status.AVALIANDO
-        self.event_bus.registrar("Clientes", f"⭐ {self.nome} avaliou o restaurante.")
+        self._event_bus.registrar("Clientes", f"⭐ {self.nome} avaliou o restaurante.")
 
     def _sair(self) -> None:
         self._status = Status.SAIU
-        self.event_bus.registrar("Clientes", f"🚪 {self.nome} deixou o restaurante.")
+        self._event_bus.registrar("Clientes", f"🚪 {self.nome} deixou o restaurante.")
